@@ -55,39 +55,114 @@
         const db = firebase.database();
 
         function showSignup() {
-            document.getElementById('loginForm').classList.add('d-none');
-            document.getElementById('signupForm').classList.remove('d-none');
-        }
-
-        function showLogin() {
-            document.getElementById('signupForm').classList.add('d-none');
-            document.getElementById('loginForm').classList.remove('d-none');
-        }
-
-        function togglePasswordVisibility(inputId, iconId) {
-            const input = document.getElementById(inputId);
-            const icon = document.getElementById(iconId);
-            if (input.type === "password") {
-                input.type = "text";
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = "password";
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
+                document.getElementById('loginForm').classList.add('hidden');
+                document.getElementById('signupForm').classList.remove('hidden');
             }
-        }
+
+            function showLogin() {
+                document.getElementById('signupForm').classList.add('hidden');
+                document.getElementById('loginForm').classList.remove('hidden');
+            }
+
+            function togglePasswordVisibility(inputId, iconId) {
+                const input = document.getElementById(inputId);
+                const icon = document.getElementById(iconId);
+                if (input.type === "password") {
+                    input.type = "text";
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = "password";
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            }
 
         async function sendddata(event) {
-            event.preventDefault();
-            // Collect data and send to Firebase
-            // (The same logic as in your original code)
-        }
+                event.preventDefault();
+
+                var name = document.getElementById("fullName").value;
+                var datebirth = document.getElementById("dob").value;
+                var gender = document.getElementById("gender").value;
+                var phone = document.getElementById("phone").value;
+                var mail = document.getElementById("signupEmail").value;
+                var password = document.getElementById("newPassword").value;
+                var address = document.getElementById("address").value;
+                var medicalHistory = document.getElementById("history").value;
+                var PreferredDoctor = document.getElementById("doctorType").value;
+                var nameEmergency = document.getElementById("emergencyName").value;
+                var phoneEmergency = document.getElementById("emergencyPhone").value;
+                var deviceKey = document.getElementById("deviceKey").value;
+
+                var pathint = {
+                    FullName: name,
+                    dateofbirth: datebirth,
+                    gender: gender,
+                    phone: phone,
+                    mail: mail,
+                    password: password,
+                    address: address,
+                    medicalHistory: medicalHistory,
+                    PreferredDoctor: PreferredDoctor,
+                    nameEmergency: nameEmergency,
+                    phoneEmergency: phoneEmergency,
+                    deviceKey: deviceKey
+                };
+
+                console.log("Sending Data:", pathint);
+
+                try {
+                    var res = await fetch("https://safeheart-2d878-default-rtdb.firebaseio.com/pathint.json", {
+                        method: "POST",
+                        headers: { 'Content-type': 'application/json' },
+                        body: JSON.stringify(pathint)
+                    });
+                    var res2 = await res.json();
+                    console.log("Response from Firebase:", res2);
+
+                    clear(); // Make sure you define this function to reset form inputs if needed
+
+                } catch (error) {
+                    console.error("Error occurred:", error);
+                }
+            }
+
+            function clear() {
+                document.getElementById("signupForm").reset();
+            }
 
         function login(event) {
-            event.preventDefault();
-            // Login logic (The same logic as in your original code)
-        }
+                event.preventDefault(); // مهم علشان يمنع الفورم من الريلود
+
+                const email = document.getElementById('emaillogin').value.trim();
+                const password = document.getElementById('passwordlogin').value.trim();
+                const msg = document.getElementById('message');
+                msg.textContent = '';
+
+                // تأكد إن db معرف ومربوط بـ Firebase
+                db.ref('pathint').once('value')
+                    .then(snapshot => {
+                        let found = false;
+
+                        snapshot.forEach(childSnapshot => {
+                            const user = childSnapshot.val();
+                            const userId = childSnapshot.key;
+
+                            if (user.mail === email && user.password === password) {
+                                found = true;
+                                sessionStorage.setItem('loggedInUserId', userId);
+                                window.location.href = "./homeDashboard.html"; // غير الصفحة هنا لو عندك صفحة تانية
+                            }
+                        });
+
+                        if (!found) {
+                            msg.textContent = "Invalid email or password.";
+                        }
+                    })
+                    .catch(error => {
+                        msg.textContent = "Error: " + error.message;
+                    });
+            }
     </script>
 </head>
 
