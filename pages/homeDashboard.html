@@ -1,0 +1,186 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>
+        Home Dashboard
+    </title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js">
+    </script>
+    <!-- Add Firebase products that you want to use -->
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js">
+    </script>
+    <style>
+        .nav-link {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .nav-link .fas {
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+
+<body class="bg-light d-flex align-items-center justify-content-center min-vh-100">
+    <div class="bg-white w-100 max-w-md mx-auto p-4 rounded-lg shadow-lg">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h4 font-weight-bold text-primary">
+                Home Dashboard
+            </h1>
+            <i class="fas fa-user-circle fa-2x text-primary">
+            </i>
+        </div>
+        <div class="row mb-4">
+            <div class="col-6 mb-4">
+                <div class="border rounded-lg p-4 d-flex flex-column align-items-center bg-primary-light">
+                    <h2 class="h6 font-weight-semibold mb-3 text-primary">
+                        Heart Rate
+                    </h2>
+                    <img alt="Heart Rate Icon" class="mb-3" height="80"
+                        src="https://placehold.co/80x80?text=Heart+Rate+Icon" width="80" />
+                    <div class="h5 font-weight-medium text-primary" id="heart-rate">
+                        -- bpm
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 mb-4">
+                <div class="border rounded-lg p-4 d-flex flex-column align-items-center bg-success-light">
+                    <h2 class="h6 font-weight-semibold mb-3 text-success">
+                        SpO
+                        <sub>
+                            2
+                        </sub>
+                    </h2>
+                    <img alt="SpO2 Icon" class="mb-3" height="80" src="https://placehold.co/80x80?text=SpO2+Icon"
+                        width="80" />
+                    <div class="h5 font-weight-medium text-success" id="spo2">
+                        --%
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 mb-4">
+                <div class="border rounded-lg p-4 d-flex flex-column align-items-center bg-warning-light">
+                    <h2 class="h6 font-weight-semibold mb-3 text-warning">
+                        Temperature
+                    </h2>
+                    <img alt="Temperature Icon" class="mb-3" height="80"
+                        src="https://placehold.co/80x80?text=Temperature+Icon" width="80" />
+                    <div class="h5 font-weight-medium text-warning" id="temperature">
+                        --°C
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 mb-4">
+                <div class="border rounded-lg p-4 d-flex flex-column align-items-center bg-danger-light">
+                    <h2 class="h6 font-weight-semibold mb-3 text-danger">
+                        Blood Pressure
+                    </h2>
+                    <img alt="Blood Pressure Icon" class="mb-3" height="80"
+                        src="https://placehold.co/80x80?text=Blood+Pressure+Icon" width="80" />
+                    <div class="h5 font-weight-medium text-danger" id="blood-pressure">
+                        -- mmHg
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-danger btn-block mb-4 font-weight-semibold">
+            EMERGENCY
+        </button>
+        <div class="d-flex justify-content-between mb-4">
+            <span class="h6 font-weight-semibold text-secondary">
+                Device status
+            </span>
+            <span class="h6 font-weight-semibold text-secondary" id="device-status">
+                Disconnected
+            </span>
+        </div>
+        <nav class="nav nav-pills nav-fill">
+            <a class="nav-link text-secondary" href="homeDashboard.html">
+                <i class="fas fa-home">
+                </i>
+                Home
+            </a>
+            <a class="nav-link text-secondary" href="HealthHistory.html">
+                <i class="fas fa-history">
+                </i>
+                History
+            </a>
+            <a class="nav-link text-secondary" href="Notifications.html">
+                <i class="fas fa-bell">
+                </i>
+                Notifications
+            </a>
+            <a class="nav-link text-secondary" href="Profile.html">
+                <i class="fas fa-user">
+                </i>
+                Profile
+            </a>
+        </nav>
+    </div>
+    <script>
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Function to update the dashboard with data from Firebase
+        function updateDashboard() {
+            const heartRateRef = database.ref('heart-rate');
+            const spo2Ref = database.ref('spo2');
+            const temperatureRef = database.ref('temperature');
+            const bloodPressureRef = database.ref('blood-pressure');
+            const deviceStatusRef = database.ref('device-status');
+
+            heartRateRef.on('value', (snapshot) => {
+                const heartRate = snapshot.val();
+                document.getElementById('heart-rate').innerText = heartRate ? heartRate + ' bpm' : '-- bpm';
+            });
+
+            spo2Ref.on('value', (snapshot) => {
+                const spo2 = snapshot.val();
+                document.getElementById('spo2').innerText = spo2 ? spo2 + '%' : '--%';
+            });
+
+            temperatureRef.on('value', (snapshot) => {
+                const temperature = snapshot.val();
+                document.getElementById('temperature').innerText = temperature ? temperature + '°C' : '--°C';
+            });
+
+            bloodPressureRef.on('value', (snapshot) => {
+                const bloodPressure = snapshot.val();
+                document.getElementById('blood-pressure').innerText = bloodPressure ? bloodPressure + ' mmHg' : '-- mmHg';
+            });
+
+            deviceStatusRef.on('value', (snapshot) => {
+                const deviceStatus = snapshot.val();
+                document.getElementById('device-status').innerText = deviceStatus ? deviceStatus : 'Disconnected';
+            });
+        }
+
+        // Initial update
+        updateDashboard();
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js">
+    </script>
+</body>
+
+</html>   
