@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>User Profile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #00c6ff, #0072ff);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+        }
+
+        .profile-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .data-item {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+
+        .buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .buttons button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: #fff;
+            color: #0072ff;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .buttons button:hover {
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="profile-container">
+        <h1>Welcome, <span id="user-name">...</span></h1>
+        <div class="data-item"><span class="label">Email:</span> <span id="user-email"></span></div>
+        <div class="data-item"><span class="label">Date of Birth:</span> <span id="user-dob"></span></div>
+        <div class="data-item"><span class="label">Preferred Doctor:</span> <span id="user-doctor"></span></div>
+        <div class="data-item"><span class="label">Medical History:</span> <span id="user-medical-history"></span></div>
+        <div class="data-item"><span class="label">Emergency Contact:</span> <span id="user-emergency-name"></span> -
+            <span id="user-emergency-phone"></span>
+        </div>
+        <div class="buttons">
+            <button onclick="logout()">Log Out</button>
+            <button onclick="deleteAccount()">Delete Account</button>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCA-QB0_T3Ano-0iIy7XME-opFc6MZXzRg",
+            authDomain: "safeheart-2d878.firebaseapp.com",
+            databaseURL: "https://safeheart-2d878-default-rtdb.firebaseio.com",
+            projectId: "safeheart-2d878",
+            storageBucket: "safeheart-2d878.appspot.com",
+            messagingSenderId: "968110391488",
+            appId: "1:968110391488:web:235a04d5b59205b1076d25"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const userId = sessionStorage.getItem("loggedInUserId");
+
+        if (!userId) {
+            alert("Please log in first.");
+            window.location.href = "./login.html";
+        } else {
+            const userRef = db.ref("pathint/" + userId);
+            userRef.once("value").then(snapshot => {
+                const data = snapshot.val();
+                document.getElementById("user-name").textContent = data.FullName;
+                document.getElementById("user-email").textContent = data.mail;
+                document.getElementById("user-dob").textContent = data.dateofbirth;
+                document.getElementById("user-doctor").textContent = data.PreferredDoctor;
+                document.getElementById("user-medical-history").textContent = data.medicalHistory;
+                document.getElementById("user-emergency-name").textContent = data.nameEmergency;
+                document.getElementById("user-emergency-phone").textContent = data.phoneEmergency;
+            });
+        }
+
+        function logout() {
+            sessionStorage.removeItem("loggedInUserId");
+            window.location.href = "./login.html";
+        }
+
+        function deleteAccount() {
+            if (confirm("Are you sure you want to delete your account?")) {
+                firebase.database().ref("pathint/" + userId).remove().then(() => {
+                    sessionStorage.removeItem("loggedInUserId");
+                    alert("Account deleted.");
+                    window.location.href = "./login.html";
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>
