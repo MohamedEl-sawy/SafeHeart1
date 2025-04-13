@@ -8,6 +8,11 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
     <style>
+        body {
+            overflow: hidden;
+            /* Prevent scrolling */
+        }
+
         .fade-enter-active,
         .fade-leave-active {
             transition: opacity 0.5s, transform 0.5s;
@@ -22,11 +27,58 @@
         .button-hover:hover {
             background-color: #f3f4f6;
         }
+
+        body,
+        .text-dark,
+        .text-muted,
+        .font-weight-bold {
+            font-size: 16px;
+        }
+
+        .icon-button {
+            border: none;
+            background: transparent;
+        }
+
+        .your-class {
+            border: none;
+            background: transparent;
+        }
+
+        .bottom-nav {
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item {
+            text-align: center;
+            color: #4a4a4a;
+            font-size: 14px;
+            padding: 8px 12px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item i {
+            font-size: 22px;
+            display: block;
+            margin-bottom: 4px;
+            transition: color 0.3s;
+        }
+
+        .nav-item:hover {
+            color: #007bff;
+            cursor: pointer;
+        }
+
+        .nav-item:hover i {
+            color: #007bff;
+        }
     </style>
 </head>
 
 <body class="bg-light d-flex align-items-center justify-content-center min-vh-100 flex-column">
-    <div class="bg-white w-100" style="max-width: 500px;">
+    <div class="bg-white w-100 px-3" style="height: calc(100vh - 56px); overflow-y: auto;">
         <div class="p-4 border-bottom">
             <h1 class="text-center h4" id="page-title">Health History</h1>
         </div>
@@ -97,58 +149,42 @@
             <div class="content-section d-none" id="monthly">
                 <p class="text-center text-dark h5">Monthly Data</p>
             </div>
+        </div>
+    </div>
 
-            <!-- Notifications Section -->
-            <div class="content-section d-none" id="notifications">
-                <p class="text-dark h5 font-weight-bold mb-2">Notifications</p>
-                <ul class="list-unstyled">
-                    <li class="p-3 bg-light rounded shadow-sm mb-2">
-                        <p class="text-dark font-weight-medium">New heart rate data available</p>
-                        <p class="text-muted small">Just now</p>
-                    </li>
-                    <li class="p-3 bg-light rounded shadow-sm mb-2">
-                        <p class="text-dark font-weight-medium">Blood pressure slightly high</p>
-                        <p class="text-muted small">2 hours ago</p>
-                    </li>
-                    <li class="p-3 bg-light rounded shadow-sm mb-2">
-                        <p class="text-dark font-weight-medium">Daily check completed</p>
-                        <p class="text-muted small">Today at 9:00 AM</p>
-                    </li>
-                </ul>
+    <!-- Stylish Bottom Navigation -->
+    <div class="bottom-nav fixed-bottom bg-white shadow p-2">
+        <div class="d-flex justify-content-around">
+            <div class="nav-item" onclick="navigateToPage('home')">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </div>
+            <div class="nav-item" onclick="navigateToPage('history')">
+                <i class="fas fa-history"></i>
+                <span>History</span>
+            </div>
+            <div class="nav-item" onclick="navigateToPage('notifications')">
+                <i class="fas fa-bell"></i>
+                <span>Alerts</span>
+            </div>
+            <div class="nav-item" onclick="navigateToPage('Profile')">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
             </div>
         </div>
     </div>
 
-    <!-- Bottom Navigation -->
-    <div class="d-flex justify-content-around py-3 border-top bg-white w-100" style="max-width: 500px;">
-        <button class="d-flex flex-column align-items-center text-dark" onclick="navigateToPage('home')">
-            <i class="fas fa-home fa-2x"></i>
-            <span class="small">Home</span>
-        </button>
-        <button class="d-flex flex-column align-items-center text-dark" onclick="navigateToPage('history')">
-            <i class="fas fa-history fa-2x"></i>
-            <span class="small">History</span>
-        </button>
-        <button class="d-flex flex-column align-items-center text-dark" onclick="navigateToPage('notifications')">
-            <i class="fas fa-bell fa-2x"></i>
-            <span class="small">Notifications</span>
-        </button>
-        <button class="d-flex flex-column align-items-center text-dark" onclick="navigateToPage('Profile')">
-            <i class="fas fa-user fa-2x"></i>
-            <span class="small">Profile</span>
-        </button>
-    </div>
 
     <script>
         function navigateToPage(page) {
             if (page === 'home') {
-                window.location.href = 'homeDashboard.html'; // Replace with actual page link
+                window.location.href = 'homeDashboard.html';
             } else if (page === 'history') {
-                window.location.href = 'HealthHistory.html'; // Replace with actual page link
+                window.location.href = 'HealthHistory.html';
             } else if (page === 'notifications') {
-                window.location.href = 'Notifications.html'; // Replace with actual page link
+                window.location.href = 'Notifications.html';
             } else if (page === 'Profile') {
-                window.location.href = 'Profile.html'; // Replace with actual page link
+                window.location.href = 'Profile.html';
             }
         }
 
@@ -167,7 +203,6 @@
                 }
             });
 
-            // Show or hide the tabs depending on section
             if (section === 'daily' || section === 'weekly' || section === 'monthly') {
                 tabs.classList.remove('d-none');
                 title.textContent = 'Health History';
@@ -177,6 +212,7 @@
             }
         }
     </script>
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
