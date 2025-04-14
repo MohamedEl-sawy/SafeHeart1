@@ -10,7 +10,7 @@
     <style>
         body {
             background-color: #e0f7fa;
-            height: 100vh;
+            /* height: 100vh; */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -135,6 +135,41 @@
             }
         }
 
+        function validateFile() {
+                const fileInput = document.getElementById('medicalHistory');
+                const fileMessage = document.getElementById('fileMessage');
+                const file = fileInput.files[0];
+
+                if (file) {
+                    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+                    if (!allowedTypes.includes(file.type)) {
+                        fileMessage.textContent = 'Please upload a valid file (PDF, DOC, DOCX, TXT).';
+                        fileMessage.classList.remove('hidden');
+                        return false;
+                    }
+                    fileMessage.classList.add('hidden');
+                    return true;
+                } else {
+                    fileMessage.textContent = 'Please select a file.';
+                    fileMessage.classList.remove('hidden');
+                    return false;
+                }
+            }
+
+            const storage = firebase.storage();
+                const storageRef = storage.ref();
+
+                async function uploadFile(file) {
+                    const fileRef = storageRef.child('medicalHistory/' + file.name);
+                    try {
+                        await fileRef.put(file);
+                        const downloadURL = await fileRef.getDownloadURL();
+                        return downloadURL;
+                    } catch (error) {
+                        console.error('Error uploading file:', error);
+                        return null;
+                    }
+                }
         async function sendddata(event) {
             event.preventDefault();
 
@@ -152,6 +187,8 @@
             var deviceKey = document.getElementById("deviceKey").value;
             var isPatient = document.getElementById("isPatient").value; // New field for patient status
             var illness = document.getElementById("illness").value;
+            const file = document.getElementById('medicalHistory').files[0];
+            const downloadURL = await uploadFile(file);
 
             if (!validateFullName(name)) {
                 document.getElementById("fullNameMessage").innerText = "Please enter at least two names separated by a space.";
@@ -169,6 +206,7 @@
                 document.getElementById("passwordMessage").innerText = "Password must be at least 8 characters long, with at least one letter and one number.";
                 return;
             }
+            if (!validateFile()) return;
 
             var pathint = {
                 FullName: name,
@@ -184,7 +222,8 @@
                 phoneEmergency: phoneEmergency,
                 deviceKey: deviceKey,
                 isPatient: isPatient,
-                illness: isPatient === "yes" ? illness : null // Include illness only if the user is a patient
+                illness: isPatient === "yes" ? illness : null, // Include illness only if the user is a patient
+                medicalHistorypdf: downloadURL
             };
 
             console.log("Sending Data:", pathint);
@@ -197,9 +236,9 @@
                 });
                 var res2 = await res.json();
                 console.log("Response from Firebase:", res2);
-
+                alert("Signup successful!");
                 clear(); // Make sure you define this function to reset form inputs if needed
-
+                showLogin();
             } catch (error) {
                 console.error("Error occurred:", error);
             }
@@ -386,9 +425,9 @@
         </form>
 
         <form id="signupForm" class="hidden" onsubmit="sendddata(event)">
-            <div class="text-center mb-4">
+            <!-- <div class="text-center mb-4">
                 <img class="logo" src="../img/354d8dea-33d6-4f38-a13f-3127f64fece3_removalai_preview.png" alt="Logo" />
-            </div>
+            </div> -->
             <div class="mb-3">
                 <label for="fullName" class="form-label required">Full Name</label>
                 <input type="text" class="form-control" id="fullName" required placeholder="John Doe" />
@@ -453,6 +492,11 @@
                 <label for="history" class="form-label required">Medical History</label>
                 <textarea id="history" class="form-control" required rows="3"
                     placeholder="List any chronic conditions, allergies, etc."></textarea>
+            </div>
+            <div class="mb-3">
+                <!-- <label for="medicalHistory" class="form-label required">Upload Medical History</label> -->
+                <input type="file" class="form-control" id="medicalHistory" accept=".pdf,.doc,.docx,.txt" required />
+                <p class="error-message hidden" id="fileMessage"></p>
             </div>
             <div class="mb-3">
                 <label for="doctorType" class="form-label required">Preferred Doctor Type</label>
