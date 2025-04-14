@@ -94,24 +94,28 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const userId = sessionStorage.getItem("loggedInUserId");
+        const userId = sessionStorage.getItem("oggedInUserId"); // Correct key for user ID
 
-        if (!userId) {
-            alert("Please log in first.");
-            window.location.href = "./login.html";
-        } else {
-            const userRef = db.ref("pathint/" + userId);
-            userRef.once("value").then(snapshot => {
-                const data = snapshot.val();
-                document.getElementById("user-name").textContent = data.FullName;
-                document.getElementById("user-email").textContent = data.mail;
-                document.getElementById("user-dob").textContent = data.dateofbirth;
-                document.getElementById("user-doctor").textContent = data.PreferredDoctor;
-                document.getElementById("user-medical-history").textContent = data.medicalHistory;
-                document.getElementById("user-emergency-name").textContent = data.nameEmergency;
-                document.getElementById("user-emergency-phone").textContent = data.phoneEmergency;
-            });
-        }
+            if (userId) {
+                const userRef = db.ref("pathint/" + userId);
+                userRef.once("value").then(snapshot => {
+                    const data = snapshot.val();
+                    if (data) {
+                        document.getElementById("user-name").textContent = data.FullName || "N/A";
+                        document.getElementById("user-email").textContent = data.mail || "N/A";
+                        document.getElementById("user-dob").textContent = data.dateofbirth || "N/A";
+                        document.getElementById("user-doctor").textContent = data.PreferredDoctor || "N/A";
+                        document.getElementById("user-medical-history").textContent = data.medicalHistory || "N/A";
+                        document.getElementById("user-emergency-name").textContent = data.nameEmergency || "N/A";
+                        document.getElementById("user-emergency-phone").textContent = data.phoneEmergency || "N/A";
+                    }
+                }).catch(error => {
+                    console.error("Error fetching user data: ", error);
+                });
+            } else {
+                alert("User  not logged in.");
+                window.location.href = "./login.html"; // Redirect to login page
+            }
 
         function logout() {
             sessionStorage.removeItem("loggedInUserId");
