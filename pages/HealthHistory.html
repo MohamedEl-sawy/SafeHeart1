@@ -9,23 +9,52 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
     <style>
         body {
-            overflow: hidden;
-            /* Prevent scrolling */
+            overflow: hidden; /* Prevent scrolling */
         }
 
-        .fade-enter-active,
-        .fade-leave-active {
-            transition: opacity 0.5s, transform 0.5s;
+        .notification:hover {
+            background-color: #f8f9fa;
         }
 
-        .fade-enter,
-        .fade-leave-to {
-            opacity: 0;
+        .notification:active {
             transform: scale(0.95);
+            transition: transform 0.1s;
         }
 
-        .button-hover:hover {
-            background-color: #f3f4f6;
+        .bottom-nav {
+            box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.1);
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+
+        .nav-item {
+            color: #555;
+            font-size: 14px;
+            padding: 8px 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-item i {
+            font-size: 22px;
+            display: block;
+            margin-bottom: 3px;
+            transition: color 0.3s;
+        }
+
+        .nav-item:hover,
+        .nav-item:hover i {
+            color: #007bff;
+        }
+
+        /* Make the card full width and height */
+        .notification-card {
+            width: 100%;
+            height: 100vh; /* Full height */
+            border-radius: 0; /* Remove border radius for full width */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Space between content and bottom nav */
         }
     </style>
 </head>
@@ -125,23 +154,25 @@
     </div>
 
     <!-- Bottom Navigation -->
-    <div class="d-flex justify-content-around py-3 border-top bg-white w-100" style="max-width: 500px;">
-        <button class="d-flex flex-column align-items-center text-dark" onclick="navigateToPage('home')">
-            <i class="fas fa-home fa-2x"></i>
-            <span class="small">Home</span>
-        </button>
-        <button class="d-flex flex-column align-items-center text-dark" onclick="navigateToPage('history')">
-            <i class="fas fa-history fa-2x"></i>
-            <span class="small">History</span>
-        </button>
-        <button class="d-flex flex-column align-items-center text-dark" onclick="navigateToPage('notifications')">
-            <i class="fas fa-bell fa-2x"></i>
-            <span class="small">Notifications</span>
-        </button>
-        <button class="d-flex flex-column align-items-center text-dark" onclick="navigateToPage('Profile')">
-            <i class="fas fa-user fa-2x"></i>
-            <span class="small">Profile</span>
-        </button>
+    <div class="bottom-nav fixed-bottom bg-white shadow-lg px-3 pt-2 pb-1">
+        <div class="d-flex justify-content-between text-center">
+            <div class="nav-item flex-fill" onclick="navigateToPage('home')">
+                <i class="fas fa-home"></i>
+                <div>Home</div>
+            </div>
+            <div class="nav-item flex-fill" onclick="navigateToPage('history')">
+                <i class="fas fa-history"></i>
+                <div>History</div>
+            </div>
+            <div class="nav-item flex-fill" onclick="navigateToPage('notifications')">
+                <i class="fas fa-bell"></i>
+                <div>Alerts</div>
+            </div>
+            <div class="nav-item flex-fill" onclick="navigateToPage('Profile')">
+                <i class="fas fa-user"></i>
+                <div>Profile</div>
+            </div>
+        </div>
     </div>
 
     <script>
