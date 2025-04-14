@@ -5,22 +5,32 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Page</title>
-    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.3/css/bootstrap.min.css"> -->
     <link rel="stylesheet" href="../css/bootstrap-5.3.3-dist/css/bootstrap.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
     <style>
         body {
             background-color: #e0f7fa;
             height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .form-container {
-            /* max-width: 500px; */
-            margin: auto;
+            width: 100%;
+            max-width: 500px;
+            /* Set max width for the form */
             padding: 20px;
             background-color: white;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo {
+            width: 100px;
+            /* Set logo width */
+            height: auto;
+            /* Maintain aspect ratio */
         }
 
         .fade-in {
@@ -36,10 +46,23 @@
                 opacity: 1;
             }
         }
+
+        .hidden {
+            display: none;
+        }
+
+        .required:after {
+            content: " *";
+            color: red;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 0.875em;
+        }
     </style>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-    <script src="./signup.js"></script>
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCA-QB0_T3Ano-0iIy7XME-opFc6MZXzRg",
@@ -55,138 +78,207 @@
         const db = firebase.database();
 
         function showSignup() {
-                document.getElementById('loginForm').classList.add('hidden');
-                document.getElementById('signupForm').classList.remove('hidden');
-            }
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('signupForm').classList.remove('hidden');
+        }
 
-            function showLogin() {
-                document.getElementById('signupForm').classList.add('hidden');
-                document.getElementById('loginForm').classList.remove('hidden');
-            }
+        function showLogin() {
+            document.getElementById('signupForm').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+        }
 
-            function togglePasswordVisibility(inputId, iconId) {
-                const input = document.getElementById(inputId);
-                const icon = document.getElementById(iconId);
-                if (input.type === "password") {
-                    input.type = "text";
-                    icon.classList.remove('fa-eye');
-                    icon.classList.add('fa-eye-slash');
-                } else {
-                    input.type = "password";
-                    icon.classList.remove('fa-eye-slash');
-                    icon.classList.add('fa-eye');
-                }
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = "password";
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
             }
+        }
+
+        function validateEmail(email) {
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailPattern.test(email);
+        }
+
+        function validatePhone(phone) {
+            const phonePattern = /^\+?[0-9]{10,15}$/; // Adjust the pattern as needed
+            return phonePattern.test(phone);
+        }
+
+        function validatePassword(password) {
+            const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; // At least 8 characters, 1 letter and 1 number
+            return passwordPattern.test(password);
+        }
+
+        function validateFullName(name) {
+            const namePattern = /^[A-Za-z]+\s[A-Za-z]+$/; // At least two words
+            return namePattern.test(name);
+        }
+
+        function checkPasswordMatch() {
+            const password = document.getElementById("newPassword").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+            const messageElement = document.getElementById("passwordMatchMessage ");
+
+            if (password !== confirmPassword) {
+                messageElement.innerText = "Passwords do not match.";
+                messageElement.classList.remove('hidden');
+            } else {
+                messageElement.innerText = "";
+                messageElement.classList.add('hidden');
+            }
+        }
 
         async function sendddata(event) {
-                event.preventDefault();
+            event.preventDefault();
 
-                var name = document.getElementById("fullName").value;
-                var datebirth = document.getElementById("dob").value;
-                var gender = document.getElementById("gender").value;
-                var phone = document.getElementById("phone").value;
-                var mail = document.getElementById("signupEmail").value;
-                var password = document.getElementById("newPassword").value;
-                var address = document.getElementById("address").value;
-                var medicalHistory = document.getElementById("history").value;
-                var PreferredDoctor = document.getElementById("doctorType").value;
-                var nameEmergency = document.getElementById("emergencyName").value;
-                var phoneEmergency = document.getElementById("emergencyPhone").value;
-                var deviceKey = document.getElementById("deviceKey").value;
+            var name = document.getElementById("fullName").value;
+            var datebirth = document.getElementById("dob").value;
+            var gender = document.getElementById("gender").value;
+            var phone = document.getElementById("phone").value;
+            var mail = document.getElementById("signupEmail").value;
+            var password = document.getElementById("newPassword").value;
+            var address = document.getElementById("address").value;
+            var medicalHistory = document.getElementById("history").value;
+            var PreferredDoctor = document.getElementById("doctorType").value;
+            var nameEmergency = document.getElementById("emergencyName").value;
+            var phoneEmergency = document.getElementById("emergencyPhone").value;
+            var deviceKey = document.getElementById("deviceKey").value;
+            var isPatient = document.getElementById("isPatient").value; // New field for patient status
+            var illness = document.getElementById("illness").value;
 
-                var pathint = {
-                    FullName: name,
-                    dateofbirth: datebirth,
-                    gender: gender,
-                    phone: phone,
-                    mail: mail,
-                    password: password,
-                    address: address,
-                    medicalHistory: medicalHistory,
-                    PreferredDoctor: PreferredDoctor,
-                    nameEmergency: nameEmergency,
-                    phoneEmergency: phoneEmergency,
-                    deviceKey: deviceKey
-                };
+            if (!validateFullName(name)) {
+                document.getElementById("fullNameMessage").innerText = "Please enter at least two names separated by a space.";
+                return;
+            }
+            if (!validateEmail(mail)) {
+                document.getElementById("emailMessage").innerText = "Invalid email address.";
+                return;
+            }
+            if (!validatePhone(phone)) {
+                document.getElementById("phoneMessage").innerText = "Invalid phone number.";
+                return;
+            }
+            if (!validatePassword(password)) {
+                document.getElementById("passwordMessage").innerText = "Password must be at least 8 characters long, with at least one letter and one number.";
+                return;
+            }
 
-                console.log("Sending Data:", pathint);
+            var pathint = {
+                FullName: name,
+                dateofbirth: datebirth,
+                gender: gender,
+                phone: phone,
+                mail: mail,
+                password: password,
+                address: address,
+                medicalHistory: medicalHistory,
+                PreferredDoctor: PreferredDoctor,
+                nameEmergency: nameEmergency,
+                phoneEmergency: phoneEmergency,
+                deviceKey: deviceKey,
+                isPatient: isPatient,
+                illness: isPatient === "yes" ? illness : null // Include illness only if the user is a patient
+            };
 
-                try {
-                    var res = await fetch("https://safeheart-2d878-default-rtdb.firebaseio.com/pathint.json", {
-                        method: "POST",
-                        headers: { 'Content-type': 'application/json' },
-                        body: JSON.stringify(pathint)
-                    });
-                    var res2 = await res.json();
-                    console.log("Response from Firebase:", res2);
+            console.log("Sending Data:", pathint);
 
-                    clear(); // Make sure you define this function to reset form inputs if needed
+            try {
+                var res = await fetch("https://safeheart-2d878-default-rtdb.firebaseio.com/pathint.json", {
+                    method: "POST",
+                    headers: { 'Content-type': 'application/json' },
+                    body: JSON.stringify(pathint)
+                });
+                var res2 = await res.json();
+                console.log("Response from Firebase:", res2);
 
-                } catch (error) {
-                    console.error("Error occurred:", error);
+                clear(); // Make sure you define this function to reset form inputs if needed
+
+            } catch (error) {
+                console.error("Error occurred:", error);
+            }
+        }
+
+        async function login(event) {
+            event.preventDefault();
+            var email = document.getElementById("emaillogin").value;
+            var password = document.getElementById("passwordlogin").value;
+
+            if (!validateEmail(email)) {
+                document.getElementById("loginEmailMessage").innerText = "Invalid email address.";
+                return;
+            }
+            if (!validatePassword(password)) {
+                document.getElementById("loginPasswordMessage").innerText = "Password must be at least 8 characters long, with at least one letter and one number.";
+                return;
+            }
+
+            try {
+                const snapshot = await fetch("https://safeheart-2d878-default-rtdb.firebaseio.com/pathint.json");
+                const data = await snapshot.json();
+                const accounts = Object.values(data);
+
+                const accountExists = accounts.some(account => account.mail === email && account.password === password);
+
+                if (accountExists) {
+                    window.location.href = "homeDashboard.html"; // Redirect to homeDashboard.html
+                } else {
+                    document.getElementById("message").innerText = "Account does not exist, you can create a new account.";
+                    showSignup();
                 }
+            } catch (error) {
+                console.error("Error checking account:", error);
+            }
+        }
+
+        function clear() {
+            document.getElementById("signupForm").reset();
+            document.getElementById("illnessContainer").classList.add('hidden'); // Hide illness input on reset
+            document.querySelectorAll(".error-message").forEach(element => {
+                element.innerText = ""; // Clear all error messages
+                element.classList.add('hidden'); // Hide all error messages });
             }
 
-            function clear() {
-                document.getElementById("signupForm").reset();
-            }
-
-        function login(event) {
-                event.preventDefault(); // مهم علشان يمنع الفورم من الريلود
-
-                const email = document.getElementById('emaillogin').value.trim();
-                const password = document.getElementById('passwordlogin').value.trim();
-                const msg = document.getElementById('message');
-                msg.textContent = '';
-
-                // تأكد إن db معرف ومربوط بـ Firebase
-                db.ref('pathint').once('value')
-                    .then(snapshot => {
-                        let found = false;
-
-                        snapshot.forEach(childSnapshot => {
-                            const user = childSnapshot.val();
-                            const userId = childSnapshot.key;
-
-                            if (user.mail === email && user.password === password) {
-                                found = true;
-                                sessionStorage.setItem('loggedInUserId', userId);
-                                window.location.href = "./homeDashboard.html"; // غير الصفحة هنا لو عندك صفحة تانية
-                            }
-                        });
-
-                        if (!found) {
-                            msg.textContent = "Invalid email or password.";
-                        }
-                    })
-                    .catch(error => {
-                        msg.textContent = "Error: " + error.message;
-                    });
-            }
+        function toggleIllnessInput() {
+                    const isPatient = document.getElementById("isPatient").value;
+                    const illnessContainer = document.getElementById("illnessContainer");
+                    if (isPatient === "yes") {
+                        illnessContainer.classList.remove('hidden');
+                    } else {
+                        illnessContainer.classList.add('hidden');
+                    }
+                }
     </script>
 </head>
 
 <body>
     <div class="form-container fade-in">
         <div class="text-center mb-4">
-            <img class="w-25 h-25 rounded-circle"
-                src="../img/354d8dea-33d6-4f38-a13f-3127f64fece3_removalai_preview.png" alt="Logo" />
+            <img class="logo" src="../img/354d8dea-33d6-4f38-a13f-3127f64fece3_removalai_preview.png" alt="Logo" />
         </div>
 
-        <form id="loginForm w-100 h-100" onsubmit="login(event)">
+        <form id="loginForm" onsubmit="login(event)">
             <div class="mb-3">
-                <label for="emaillogin" class="form-label">Email Address</label>    e
+                <label for="emaillogin" class="form-label required">Email Address</label>
                 <input type="email" class="form-control" id="emaillogin" required placeholder="Username@gmail.com" />
+                <p id="loginEmailMessage" class="error-message hidden"></p>
             </div>
             <div class="mb-3">
-                <label for="passwordlogin" class="form-label">Password</label>
+                <label for="passwordlogin" class="form-label required">Password</label>
                 <div class="input-group">
                     <input type="password" class="form-control" id="passwordlogin" required placeholder="********" />
                     <span class="input-group-text" id="togglePassword"
                         onclick="togglePasswordVisibility('passwordlogin', 'togglePassword')">
-                        <i class="fas fa-eye" id="togglePassword"></i>
+                        <i class="fas fa-eye"></i>
                     </span>
                 </div>
+                <p id="loginPasswordMessage" class="error-message hidden"></p>
             </div>
             <button type="submit" class="btn btn-primary w-100">Login</button>
             <p id="message" class="text-danger mt-2"></p>
@@ -196,17 +288,21 @@
             </div>
         </form>
 
-        <form id="signupForm" class="d-none" onsubmit="sendddata(event)">
-            <div class="mb-3">
-                <label for="fullName" class="form-label">Full Name</label>
-                <input type="text" class="form-control" id="fullName" required placeholder="John Doe" />
+        <form id="signupForm" class="hidden" onsubmit="sendddata(event)">
+            <div class="text-center mb-4">
+                <img class="logo" src="../img/354d8dea-33d6-4f38-a13f-3127f64fece3_removalai_preview.png" alt="Logo" />
             </div>
             <div class="mb-3">
-                <label for="dob" class="form-label">Date of Birth</label>
+                <label for="fullName" class="form-label required">Full Name</label>
+                <input type="text" class="form-control" id="fullName" required placeholder="John Doe" />
+                <p id="fullNameMessage" class="error-message hidden"></p>
+            </div>
+            <div class="mb-3">
+                <label for="dob" class="form-label required">Date of Birth</label>
                 <input type="date" class="form-control" id="dob" required />
             </div>
             <div class="mb-3">
-                <label for="gender" class="form-label">Gender</label>
+                <label for="gender" class="form-label required">Gender</label>
                 <select id="gender" class="form-select" required>
                     <option value="" disabled selected>Select your gender</option>
                     <option value="male">Male</option>
@@ -215,58 +311,83 @@
                 </select>
             </div>
             <div class="mb-3">
-                <label for="phone" class="form-label">Phone Number</label>
-                <input type="tel" class="form-control" id="phone" required placeholder="+1234567890" />
+                <label for="phone" class="form-label required">Phone Number</label>
+                <input type="tel" class="form-control" id="phone" required placeholder="+123456 7890" />
+                <p id="phoneMessage" class="error-message hidden"></p>
             </div>
             <div class="mb-3">
-                <label for="signupEmail" class="form-label">Email Address</label>
+                <label for="signupEmail" class="form-label required">Email Address</label>
                 <input type="email" class="form-control" id="signupEmail" required placeholder="you@example.com" />
+                <p id="emailMessage" class="error-message hidden"></p>
             </div>
             <div class="mb-3">
-                <label for="newPassword" class="form-label">Password</label>
+                <label for="newPassword" class="form-label required">Password</label>
                 <div class="input-group">
-                    <input type="password" class="form-control" id="newPassword" required placeholder="********" />
+                    <input type="password" class="form-control" id="newPassword" required placeholder="********"
+                        oninput="checkPasswordMatch()" />
                     <span class="input-group-text" id="toggleNewPassword"
                         onclick="togglePasswordVisibility('newPassword', 'toggleNewPassword')">
                         <i class="fas fa-eye"></i>
                     </span>
                 </div>
+                <p id="passwordMessage" class="error-message hidden"></p>
             </div>
             <div class="mb-3">
-                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                <label for="confirmPassword" class="form-label required">Confirm Password</label>
                 <div class="input-group">
-                    <input type="password" class="form-control" id="confirmPassword" required placeholder="********" />
+                    <input type="password" class="form-control" id="confirmPassword" required placeholder="********"
+                        oninput="checkPasswordMatch()" />
                     <span class="input-group-text" id="toggleConfirmPassword"
                         onclick="togglePasswordVisibility('confirmPassword', 'toggleConfirmPassword')">
                         <i class="fas fa-eye"></i>
                     </span>
                 </div>
+                <p id="passwordMatchMessage" class="error-message hidden"></p>
             </div>
             <div class="mb-3">
-                <label for="deviceKey" class="form-label">Device Key</label>
+                <label for="deviceKey" class="form-label required">Device Key</label>
                 <input type="text" class="form-control" id="deviceKey" required placeholder="Enter your device key" />
             </div>
             <div class="mb-3">
-                <label for="address" class="form-label">Address</label>
+                <label for="address" class="form-label required">Address</label>
                 <input type="text" class="form-control" id="address" required placeholder="123 Main St, City" />
             </div>
             <div class="mb-3">
-                <label for="history" class="form-label">Medical History</label>
+                <label for="history" class="form-label required">Medical History</label>
                 <textarea id="history" class="form-control" required rows="3"
                     placeholder="List any chronic conditions, allergies, etc."></textarea>
             </div>
             <div class="mb-3">
-                <label for="doctorType" class="form-label">Preferred Doctor Type</label>
+                <label for="doctorType" class="form-label required">Preferred Doctor Type</label>
                 <input type="text" class="form-control" id="doctorType" required placeholder="e.g. Cardiologist" />
+            </div>
+            <div class="mb-3">
+                <label for="isPatient" class="form-label required">Are you suffering from any specific illness?</label>
+                <select id="isPatient" class="form-select" required onchange="toggleIllnessInput()">
+                    <option value="" disabled selected>Select an option</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </select>
+            </div>
+            <div id="illnessContainer" class="hidden mb-3">
+                <label for="illness" class="form-label">Please specify the illness:</label>
+                <select id="illness" class="form-select">
+                    <option value="" disabled selected>Select an illness</option>
+                    <option value="diabetes">Diabetes</option>
+                    <option value="hypertension">Hypertension</option>
+                    <option value="asthma">Asthma</option>
+                    <option value="heart_disease">Heart Disease</option>
+                    <option value="other">Other</option>
+                </select>
             </div>
             <h5>Emergency Contact Information</h5>
             <div class="mb-3">
-                <label for="emergencyName" class="form-label">Full Name</label>
+                <label for="emergencyName" class="form-label required">Full Name</label>
                 <input type="text" class="form-control" id="emergencyName" required
                     placeholder="Emergency Contact Name" />
             </div>
             <div class="mb-3">
-                <label for="emergencyPhone" class="form-label">Phone Number</label>
+                <label for="emergencyPhone" class="form-label required">Phone Number</label>
                 <input type="tel" class="form-control" id="emergencyPhone" required placeholder="Emergency Phone" />
             </div>
             <button type="submit" class="btn btn-primary w-100">Signup</button>
@@ -278,7 +399,6 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.3/js/bootstrap.min.js"></script> -->
     <script src="../css/bootstrap-5.3.3-dist/js/bootstrap.min.js"></script>
 </body>
 
