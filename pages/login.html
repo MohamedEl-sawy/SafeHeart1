@@ -3,53 +3,38 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Page</title>
-    <link rel="stylesheet" href="../css/bootstrap-5.3.3-dist/css/bootstrap.min.css" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../css/bootstrap-5.3.3-dist/css/bootstrap.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
     <style>
         body {
             background-color: #e0f7fa;
-            height: 100vw;
-            margin: 0;
+            height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .form-container {
-            max-width: 500px;
             width: 100%;
-            background-color: #fff;
+            max-width: 500px;
+            /* Set max width for the form */
+            padding: 20px;
+            background-color: white;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            animation: fadeIn 1s ease-in-out;
         }
 
         .logo {
             width: 100px;
+            /* Set logo width */
             height: auto;
-            margin: 0 auto 1rem auto;
-            display: block;
+            /* Maintain aspect ratio */
         }
 
-        .hidden {
-            display: none !important;
-        }
-
-        .required::after {
-            content: " *";
-            color: red;
-        }
-
-        .error-message {
-            color: red;
-            font-size: 0.875em;
-            margin-top: 0.25rem;
+        .fade-in {
+            animation: fadeIn 1s ease-in-out;
         }
 
         @keyframes fadeIn {
@@ -62,13 +47,18 @@
             }
         }
 
-        .position-relative .input-icon {
-            position: absolute;
-            top: 50%;
-            right: 10px;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #6c757d;
+        .hidden {
+            display: none;
+        }
+
+        .required:after {
+            content: " *";
+            color: red;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 0.875em;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
@@ -90,18 +80,16 @@
         function showSignup() {
             document.getElementById('loginForm').classList.add('hidden');
             document.getElementById('signupForm').classList.remove('hidden');
-            clearMessages();
         }
 
         function showLogin() {
             document.getElementById('signupForm').classList.add('hidden');
             document.getElementById('loginForm').classList.remove('hidden');
-            clearMessages();
         }
 
-        function togglePasswordVisibility(inputId, iconElement) {
+        function togglePasswordVisibility(inputId, iconId) {
             const input = document.getElementById(inputId);
-            const icon = iconElement.querySelector('i');
+            const icon = document.getElementById(iconId);
             if (input.type === "password") {
                 input.type = "text";
                 icon.classList.remove('fa-eye');
@@ -113,239 +101,304 @@
             }
         }
 
-        function clearMessages() {
-            const errorMessages = document.querySelectorAll('.error-message');
-            errorMessages.forEach(msg => {
-                msg.textContent = '';
-                msg.classList.add('hidden');
-            });
-            const generalMsg = document.getElementById('message');
-            if (generalMsg) generalMsg.textContent = '';
+        function validateEmail(email) {
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailPattern.test(email);
         }
 
-        function validateEmail(email) {
-            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return re.test(email.toLowerCase());
+        function validatePhone(phone) {
+            const phonePattern = /^\+?[0-9]{10,15}$/; // Adjust the pattern as needed
+            return phonePattern.test(phone);
         }
 
         function validatePassword(password) {
-            // Minimum 8 characters, at least one letter and one number
-            const re = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-            return re.test(password);
+            const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; // At least 8 characters, 1 letter and 1 number
+            return passwordPattern.test(password);
+        }
+
+        function validateFullName(name) {
+            const namePattern = /^[A-Za-z]+\s[A-Za-z]+$/; // At least two words
+            return namePattern.test(name);
+        }
+
+        function checkPasswordMatch() {
+            const password = document.getElementById("newPassword").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+            const messageElement = document.getElementById("passwordMatchMessage ");
+
+            if (password !== confirmPassword) {
+                messageElement.innerText = "Passwords do not match.";
+                messageElement.classList.remove('hidden');
+            } else {
+                messageElement.innerText = "";
+                messageElement.classList.add('hidden');
+            }
         }
 
         async function sendddata(event) {
             event.preventDefault();
-            clearMessages();
 
-            const fullName = document.getElementById('fullName').value.trim();
-            const dob = document.getElementById('dob').value;
-            const gender = document.getElementById('gender').value;
-            const phone = document.getElementById('phone').value.trim();
-            const email = document.getElementById('signupEmail').value.trim();
-            const password = document.getElementById('newPassword').value.trim();
-            const confirmPassword = document.getElementById('confirmPassword').value.trim();
-            const address = document.getElementById('address').value.trim();
-            const medicalHistory = document.getElementById('history').value.trim();
-            const preferredDoctor = document.getElementById('doctorType').value.trim();
-            const isPatient = document.getElementById('isPatient').value;
-            const illness = isPatient === 'yes' ? document.getElementById('illness').value : null;
-            const emergencyName = document.getElementById('emergencyName').value.trim();
-            const emergencyPhone = document.getElementById('emergencyPhone').value.trim();
-            const deviceKey = document.getElementById('deviceKey').value.trim();
+            var name = document.getElementById("fullName").value;
+            var datebirth = document.getElementById("dob").value;
+            var gender = document.getElementById("gender").value;
+            var phone = document.getElementById("phone").value;
+            var mail = document.getElementById("signupEmail").value;
+            var password = document.getElementById("newPassword").value;
+            var address = document.getElementById("address").value;
+            var medicalHistory = document.getElementById("history").value;
+            var PreferredDoctor = document.getElementById("doctorType").value;
+            var nameEmergency = document.getElementById("emergencyName").value;
+            var phoneEmergency = document.getElementById("emergencyPhone").value;
+            var deviceKey = document.getElementById("deviceKey").value;
+            var isPatient = document.getElementById("isPatient").value; // New field for patient status
+            var illness = document.getElementById("illness").value;
 
-            let valid = true;
-
-            if (fullName.split(' ').length < 2) {
-                document.getElementById('fullNameMessage').textContent = 'Please enter at least two names.';
-                document.getElementById('fullNameMessage').classList.remove('hidden');
-                valid = false;
+            if (!validateFullName(name)) {
+                document.getElementById("fullNameMessage").innerText = "Please enter at least two names separated by a space.";
+                return;
             }
-            if (!dob) {
-                alert('Please select your date of birth.');
-                valid = false;
+            if (!validateEmail(mail)) {
+                document.getElementById("emailMessage").innerText = "Invalid email address.";
+                return;
             }
-            if (!gender) {
-                alert('Please select your gender.');
-                valid = false;
-            }
-            if (!phone.match(/^\+?[0-9]{10,15}$/)) {
-                document.getElementById('phoneMessage').textContent = 'Invalid phone number.';
-                document.getElementById('phoneMessage').classList.remove('hidden');
-                valid = false;
-            }
-            if (!validateEmail(email)) {
-                document.getElementById('emailMessage').textContent = 'Invalid email address.';
-                document.getElementById('emailMessage').classList.remove('hidden');
-                valid = false;
+            if (!validatePhone(phone)) {
+                document.getElementById("phoneMessage").innerText = "Invalid phone number.";
+                return;
             }
             if (!validatePassword(password)) {
-                document.getElementById('passwordMessage').textContent = 'Password must be at least 8 characters with letters and numbers.';
-                document.getElementById('passwordMessage').classList.remove('hidden');
-                valid = false;
-            }
-            if (password !== confirmPassword) {
-                document.getElementById('passwordMatchMessage').textContent = 'Passwords do not match.';
-                document.getElementById('passwordMatchMessage').classList.remove('hidden');
-                valid = false;
-            }
-            if (!deviceKey) {
-                alert('Please enter your device key.');
-                valid = false;
-            }
-            if (!address) {
-                alert('Please enter your address.');
-                valid = false;
-            }
-            if (!medicalHistory) {
-                alert('Please enter your medical history.');
-                valid = false;
-            }
-            if (!preferredDoctor) {
-                alert('Please enter your preferred doctor type.');
-                valid = false;
-            }
-            if (!emergencyName) {
-                alert('Please enter emergency contact name.');
-                valid = false;
-            }
-            if (!emergencyPhone.match(/^\+?[0-9]{10,15}$/)) {
-                alert('Invalid emergency phone number.');
-                valid = false;
+                document.getElementById("passwordMessage").innerText = "Password must be at least 8 characters long, with at least one letter and one number.";
+                return;
             }
 
-            if (!valid) return;
-
-            const userData = {
-                FullName: fullName,
-                dateofbirth: dob,
+            var pathint = {
+                FullName: name,
+                dateofbirth: datebirth,
                 gender: gender,
                 phone: phone,
-                mail: email,
+                mail: mail,
                 password: password,
                 address: address,
                 medicalHistory: medicalHistory,
-                PreferredDoctor: preferredDoctor,
+                PreferredDoctor: PreferredDoctor,
+                nameEmergency: nameEmergency,
+                phoneEmergency: phoneEmergency,
+                deviceKey: deviceKey,
                 isPatient: isPatient,
-                illness: illness,
-                nameEmergency: emergencyName,
-                phoneEmergency: emergencyPhone,
-                deviceKey: deviceKey
+                illness: isPatient === "yes" ? illness : null // Include illness only if the user is a patient
             };
 
+            console.log("Sending Data:", pathint);
+
             try {
-                const response = await fetch("https://safeheart-2d878-default-rtdb.firebaseio.com/pathint.json", {
+                var res = await fetch("https://safeheart-2d878-default-rtdb.firebaseio.com/pathint.json", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(userData)
+                    headers: { 'Content-type': 'application/json' },
+                    body: JSON.stringify(pathint)
                 });
-                const result = await response.json();
-                alert("Signup successful!");
-                clear();
-                showLogin();
+                var res2 = await res.json();
+                console.log("Response from Firebase:", res2);
+
+                clear(); // Make sure you define this function to reset form inputs if needed
+
             } catch (error) {
-                alert("Error during signup: " + error.message);
+                console.error("Error occurred:", error);
             }
         }
 
         async function login(event) {
-            event.preventDefault();
-            clearMessages();
-
-            const email = document.getElementById("emaillogin").value.trim();
-            const password = document.getElementById("passwordlogin").value.trim();
-
-            if (!validateEmail(email)) {
-                const emailMsg = document.getElementById("loginEmailMessage");
-                emailMsg.textContent = "Invalid email address.";
-                emailMsg.classList.remove("hidden");
-                return;
-            }
-            if (!validatePassword(password)) {
-                const passMsg = document.getElementById("loginPasswordMessage");
-                passMsg.textContent = "Password must be at least 8 characters with letters and numbers.";
-                passMsg.classList.remove("hidden");
-                return;
-            }
-
-            try {
-                const snapshot = await db.ref('pathint').once('value');
-                let found = false;
-                snapshot.forEach(childSnapshot => {
-                    const user = childSnapshot.val();
-                    if (user.mail === email && user.password === password) {
-                        found = true;
-                        sessionStorage.setItem('loggedInUser Id', childSnapshot.key);
-                        sessionStorage.setItem('deviceKey', user.deviceKey);
-                        window.location.href = "./homeDashboard.html?deviceKey=" + user.deviceKey;
-                    }
-                });
-                if (!found) {
-                    const msg = document.getElementById('message');
-                    msg.textContent = "Invalid email or password.";
-                }
-            } catch (error) {
+                event.preventDefault();
+                const email = document.getElementById("emaillogin").value.trim();
+                const password = document.getElementById("passwordlogin").value.trim();
                 const msg = document.getElementById('message');
-                msg.textContent = "Error: " + error.message;
+                msg.textContent = '';
+
+                if (!validateEmail(email)) {
+                    document.getElementById("loginEmailMessage").innerText = "Invalid email address.";
+                    return;
+                }
+                if (!validatePassword(password)) {
+                    document.getElementById("loginPasswordMessage").innerText = "Password must be at least 8 characters long, with at least one letter and one number.";
+                    return;
+                }
+
+                db.ref('pathint').once('value')
+                    .then(snapshot => {
+                        let found = false;
+
+                        snapshot.forEach(childSnapshot => {
+                            const user = childSnapshot.val();
+                            const userId = childSnapshot.key;
+
+                            if (user.mail === email && user.password === password) {
+                                found = true;
+                                sessionStorage.setItem('loggedInUserId' , userId);
+                                sessionStorage.setItem('deviceKey', user.deviceKey);
+                                window.location.href = "./homeDashboard.html?deviceKey=" + user.deviceKey;
+                            }  
+                        });
+
+                        if (!found) {
+                            msg.textContent = "Invalid email or password.";
+                        }
+                    })
+                    .catch(error => {
+                        msg.textContent = "Error: " + error.message;
+                    });
             }
-        }
+
+            const userId = sessionStorage.getItem("loggedInUser  Id"); // Correct key for user ID
+
+                if (!userId) {
+                    const userRef = db.ref("pathint/" + userId);
+                    userRef.once("value").then(snapshot => {
+                        const data = snapshot.val();
+                        if (data) {
+                            document.getElementById("user-name").textContent = data.FullName || "N/A";
+                            document.getElementById("user-email").textContent = data.mail || "N/A";
+                            document.getElementById("user-dob").textContent = data.dateofbirth || "N/A";
+                            document.getElementById("user-doctor").textContent = data.PreferredDoctor || "N/A";
+                            document.getElementById("user-medical-history").textContent = data.medicalHistory || "N/A";
+                            document.getElementById("user-emergency-name").textContent = data.nameEmergency || "N/A";
+                            document.getElementById("user-emergency-phone").textContent = data.phoneEmergency || "N/A";
+                        } else {
+                            alert("No data found for this user.");
+                        }
+                    }).catch(error => {
+                        console.error("Error fetching user data: ", error);
+                    });
+                } else {
+                    alert("User  not logged in.");
+                    window.location.href = "./login.html"; // Redirect to login page
+                }
+
+        // async function login(event) {
+        //     event.preventDefault();
+        //     var email = document.getElementById("emaillogin").value;
+        //     var password = document.getElementById("passwordlogin").value;
+        //     const msg = document.getElementById('message');
+        //     msg.textContent = '';
+        //     db.ref('pathint').once('value')
+        //         .then(snapshot => {
+        //             let found = false;
+
+        //             snapshot.forEach(childSnapshot => {
+        //                 const user = childSnapshot.val();
+        //                 const userId = childSnapshot.key;
+
+        //                 if (user.mail === email && user.password === password) {
+        //                     found = true;
+        //                     sessionStorage.setItem('loggedInUser Id', userId);
+        //                     // Redirect to home dashboard
+        //                     window.location.href = "./homeDashboard.html?deviceKey=" + user.deviceKey;
+        //                 }
+        //             });
+
+        //             if (!found) {
+        //                 msg.textContent = "Invalid email or password.";
+        //             }
+        //         })
+        //         .catch(error => {
+        //             msg.textContent = "Error: " + error.message;
+        //         });
+
+        //     if (!validateEmail(email)) {
+        //         document.getElementById("loginEmailMessage").innerText = "Invalid email address.";
+        //         return;
+        //     }
+        //     if (!validatePassword(password)) {
+        //         document.getElementById("loginPasswordMessage").innerText = "Password must be at least 8 characters long, with at least one letter and one number.";
+        //         return;
+        //     }
+
+        //     try {
+        //         const snapshot = await fetch("https://safeheart-2d878-default-rtdb.firebaseio.com/pathint.json");
+        //         const data = await snapshot.json();
+        //         const accounts = Object.values(data);
+
+        //         const accountExists = accounts.some(account => account.mail === email && account.password === password);
+
+        //         if (accountExists) {
+        //             window.location.href = "./homeDashboard.html"; // Redirect to homeDashboard.html
+        //         } else {
+        //             document.getElementById("message").innerText = "Account does not exist, you can create a new account.";
+        //             showSignup();
+        //         }
+        //     } catch (error) {
+        //         console.error("Error checking account:", error);
+        //     }
+        // }
 
         function clear() {
             document.getElementById("signupForm").reset();
-            document.getElementById("illnessContainer").classList.add("hidden");
-            clearMessages();
+            document.getElementById("illnessContainer").classList.add('hidden'); // Hide illness input on reset
+            document.querySelectorAll(".error-message").forEach(element => {
+                element.innerText = ""; // Clear all error messages
+                element.classList.add('hidden'); // Hide all error messages });
+            });
         }
 
         function toggleIllnessInput() {
-            const isPatient = document.getElementById("isPatient").value;
-            const illnessContainer = document.getElementById("illnessContainer");
-            if (isPatient === "yes") {
-                illnessContainer.classList.remove("hidden");
-            } else {
-                illnessContainer.classList.add("hidden");
-            }
-        }
+                    const isPatient = document.getElementById("isPatient").value;
+                    const illnessContainer = document.getElementById("illnessContainer");
+                    if (isPatient === "yes") {
+                        illnessContainer.classList.remove('hidden');
+                    } else {
+                        illnessContainer.classList.add('hidden');
+                    }
+                }
     </script>
 </head>
 
 <body>
-    <div class="form-container">
-        <img src="../img/354d8dea-33d6-4f38-a13f-3127f64fece3_removalai_preview.png" alt="Logo" class="logo" />
+    <div class="form-container fade-in">
+        <div class="text-center mb-4">
+            <img class="logo" src="../img/354d8dea-33d6-4f38-a13f-3127f64fece3_removalai_preview.png" alt="Logo" />
+        </div>
 
-        <form id="loginForm" onsubmit="login(event)" class="d-flex flex-column gap-3">
-            <div>
+        <form id="loginForm" onsubmit="login(event)">
+            <div class="mb-3">
                 <label for="emaillogin" class="form-label required">Email Address</label>
-                <input type="email" id="emaillogin" class="form-control" placeholder="Username@gmail.com" required />
+                <input type="email" class="form-control" id="emaillogin" required placeholder="Username@gmail.com" />
                 <p id="loginEmailMessage" class="error-message hidden"></p>
             </div>
-            <div class="position-relative">
+            <div class="mb-3">
                 <label for="passwordlogin" class="form-label required">Password</label>
                 <div class="input-group">
-                    <input type="password" id="passwordlogin" class="form-control" placeholder="********" required />
-                    <span class="input-group-text" onclick="togglePasswordVisibility('passwordlogin', this)">
+                    <input type="password" class="form-control" id="passwordlogin" required placeholder="********" />
+                    <span class="input-group-text" id="togglePassword"
+                        onclick="togglePasswordVisibility('passwordlogin', 'togglePassword')">
                         <i class="fas fa-eye"></i>
                     </span>
                 </div>
                 <p id="loginPasswordMessage" class="error-message hidden"></p>
             </div>
+            <!-- <div class="mb-3">
+                <label for="Device Key" class="form-label required">Device Key</label>
+                <input type="input" class="form-control" id="DeviceKey" required placeholder="on the back of safe heart" />
+                <p id="loginDeviceKey" class="error-message hidden"></p>
+            </div> -->
             <button type="submit" class="btn btn-primary w-100">Login</button>
-            <p id="message" class="text-danger"></p>
-            <p class="text-center mt-2">
-                Don't have an account? <a href="#" onclick="showSignup(); return false;">Signup</a>
-            </p>
+            <p id="message" class="text-danger mt-2"></p>
+            <div class="d-flex justify-content-between mt-3">
+                <a href="#" onclick="showSignup()">Signup</a>
+                <a href="#">Forgot Password?</a>
+            </div>
         </form>
 
-        <form id="signupForm" class="hidden d-flex flex-column gap-3" onsubmit="sendddata(event)">
-            <div>
+        <form id="signupForm" class="hidden" onsubmit="sendddata(event)">
+            <div class="text-center mb-4">
+                <img class="logo" src="../img/354d8dea-33d6-4f38-a13f-3127f64fece3_removalai_preview.png" alt="Logo" />
+            </div>
+            <div class="mb-3">
                 <label for="fullName" class="form-label required">Full Name</label>
-                <input type="text" id="fullName" class="form-control" placeholder="John Doe" required />
+                <input type="text" class="form-control" id="fullName" required placeholder="John Doe" />
                 <p id="fullNameMessage" class="error-message hidden"></p>
             </div>
-            <div>
+            <div class="mb-3">
                 <label for="dob" class="form-label required">Date of Birth</label>
-                <input type="date" id="dob" class="form-control" required />
+                <input type="date" class="form-control" id="dob" required />
             </div>
-            <div>
+            <div class="mb-3">
                 <label for="gender" class="form-label required">Gender</label>
                 <select id="gender" class="form-select" required>
                     <option value="" disabled selected>Select your gender</option>
@@ -354,56 +407,58 @@
                     <option value="other">Other</option>
                 </select>
             </div>
-            <div>
+            <div class="mb-3">
                 <label for="phone" class="form-label required">Phone Number</label>
-                <input type="tel" id="phone" class="form-control" placeholder="+1234567890" required />
+                <input type="tel" class="form-control" id="phone" required placeholder="+123456 7890" />
                 <p id="phoneMessage" class="error-message hidden"></p>
             </div>
-            <div>
+            <div class="mb-3">
                 <label for="signupEmail" class="form-label required">Email Address</label>
-                <input type="email" id="signupEmail" class="form-control" placeholder="you@example.com" required />
+                <input type="email" class="form-control" id="signupEmail" required placeholder="you@example.com" />
                 <p id="emailMessage" class="error-message hidden"></p>
             </div>
-            <div>
+            <div class="mb-3">
                 <label for="newPassword" class="form-label required">Password</label>
-                <div class="input-group position-relative">
-                    <input type="password" id="newPassword" class="form-control" placeholder="********" required
+                <div class="input-group">
+                    <input type="password" class="form-control" id="newPassword" required placeholder="********"
                         oninput="checkPasswordMatch()" />
-                    <span class="input-group-text" onclick="togglePasswordVisibility('newPassword', this)">
+                    <span class="input-group-text" id="toggleNewPassword"
+                        onclick="togglePasswordVisibility('newPassword', 'toggleNewPassword')">
                         <i class="fas fa-eye"></i>
                     </span>
                 </div>
                 <p id="passwordMessage" class="error-message hidden"></p>
             </div>
-            <div>
+            <div class="mb-3">
                 <label for="confirmPassword" class="form-label required">Confirm Password</label>
-                <div class="input-group position-relative">
-                    <input type="password" id="confirmPassword" class="form-control" placeholder="********" required
+                <div class="input-group">
+                    <input type="password" class="form-control" id="confirmPassword" required placeholder="********"
                         oninput="checkPasswordMatch()" />
-                    <span class="input-group-text" onclick="togglePasswordVisibility('confirmPassword', this)">
+                    <span class="input-group-text" id="toggleConfirmPassword"
+                        onclick="togglePasswordVisibility('confirmPassword', 'toggleConfirmPassword')">
                         <i class="fas fa-eye"></i>
                     </span>
                 </div>
                 <p id="passwordMatchMessage" class="error-message hidden"></p>
             </div>
-            <div>
+            <div class="mb-3">
                 <label for="deviceKey" class="form-label required">Device Key</label>
-                <input type="text" id="deviceKey" class="form-control" placeholder="Enter your device key" required />
+                <input type="text" class="form-control" id="deviceKey" required placeholder="Enter your device key" />
             </div>
-            <div>
+            <div class="mb-3">
                 <label for="address" class="form-label required">Address</label>
-                <input type="text" id="address" class="form-control" placeholder="123 Main St, City" required />
+                <input type="text" class="form-control" id="address" required placeholder="123 Main St, City" />
             </div>
-            <div>
+            <div class="mb-3">
                 <label for="history" class="form-label required">Medical History</label>
-                <textarea id="history" class="form-control" rows="3"
-                    placeholder="List any chronic conditions, allergies, etc." required></textarea>
+                <textarea id="history" class="form-control" required rows="3"
+                    placeholder="List any chronic conditions, allergies, etc."></textarea>
             </div>
-            <div>
+            <div class="mb-3">
                 <label for="doctorType" class="form-label required">Preferred Doctor Type</label>
-                <input type="text" id="doctorType" class="form-control" placeholder="e.g. Cardiologist" required />
+                <input type="text" class="form-control" id="doctorType" required placeholder="e.g. Cardiologist" />
             </div>
-            <div>
+            <div class="mb-3">
                 <label for="isPatient" class="form-label required">Are you suffering from any specific illness?</label>
                 <select id="isPatient" class="form-select" required onchange="toggleIllnessInput()">
                     <option value="" disabled selected>Select an option</option>
@@ -411,7 +466,7 @@
                     <option value="no">No</option>
                 </select>
             </div>
-            <div id="illnessContainer" class="hidden">
+            <div id="illnessContainer" class="hidden mb-3">
                 <label for="illness" class="form-label">Please specify the illness:</label>
                 <select id="illness" class="form-select">
                     <option value="" disabled selected>Select an illness</option>
@@ -423,21 +478,25 @@
                 </select>
             </div>
             <h5>Emergency Contact Information</h5>
-            <div>
+            <div class="mb-3">
                 <label for="emergencyName" class="form-label required">Full Name</label>
-                <input type="text" id="emergencyName" class="form-control" placeholder="Emergency Contact Name"
-                    required />
+                <input type="text" class="form-control" id="emergencyName" required
+                    placeholder="Emergency Contact Name" />
             </div>
-            <div>
+            <div class="mb-3">
                 <label for="emergencyPhone" class="form-label required">Phone Number</label>
-                <input type="tel" id "emergencyPhone" class="form-control" placeholder="Emergency Phone" required />
+                <input type="tel" class="form-control" id="emergencyPhone" required placeholder="Emergency Phone" />
             </div>
-            <button type="submit" class="btn btn-success w-100">Signup</button>
-            <p class="text-center mt-2">
-                Already have an account? <a href="#" onclick="showLogin(); return false;">Login</a>
-            </p>
+            <button type="submit" class="btn btn-primary w-100">Signup</button>
+            <div class="text-center mt-3">
+                Already have an account? <a href="#" onclick="showLogin()">Login</a>
+            </div>
         </form>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="../css/bootstrap-5.3.3-dist/js/bootstrap.min.js"></script>
 </body>
 
 </html>
