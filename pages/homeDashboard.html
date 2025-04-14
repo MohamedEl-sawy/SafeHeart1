@@ -14,6 +14,27 @@
     <!-- Add Firebase products that you want to use -->
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js">
     </script>
+    <!-- <script>
+        function updateDashboard(deviceKey) {
+                const deviceRef = database.ref('Devices/' + deviceKey);
+
+                deviceRef.on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        const latestData = Object.values(data).pop(); // Get the latest data
+                        document.getElementById('heart-rate').innerText = latestData.heartRate ? latestData.heartRate + ' bpm' : '-- bpm';
+                        document.getElementById('spo2').innerText = latestData.SpO2 ? latestData.SpO2 + '%' : '--%';
+                        document.getElementById('temperature').innerText = latestData.ambientTemperature ? latestData.ambientTemperature + '°C' : '--°C';
+                        document.getElementById('blood-pressure').innerText = latestData.bloodPressure ? latestData.bloodPressure + ' mmHg' : '-- mmHg';
+                    }
+                });
+            }
+
+            // Call this function in your home dashboard script
+            const urlParams = new URLSearchParams(window.location.search);
+            const deviceKey = urlParams.get('deviceKey');
+            updateDashboard(deviceKey);
+    </script> -->
     <style>
         .nav-link {
             font-size: 1.1rem;
@@ -27,154 +48,185 @@
 </head>
 
 <body class="bg-light d-flex align-items-center justify-content-center min-vh-100">
-    <div class="bg-white w-100 max-w-md mx-auto p-4 rounded-lg shadow-lg">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h4 font-weight-bold text-primary">
-                Home Dashboard
-            </h1>
-            <i class="fas fa-user-circle fa-2x text-primary">
-            </i>
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+            <div class="col-12 col-md-6 mx-auto my-auto">
+                <div class="bg-white p-4 rounded-lg shadow-lg">
+                    <h1 class="h4 font-weight-bold text-primary text-center">Home Dashboard</h1>
+                    <div class="row mb-4">
+                        <div class="col-6 mb-4">
+                            <div class="border rounded-lg p-4 d-flex flex-column align-items-center bg-primary-light">
+                                <h2 class="h6 font-weight-semibold mb-3 text-primary">
+                                    <i class="fas fa-heartbeat"></i> Heart Rate
+                                </h2>
+                                <div class="h5 font-weight-medium text-primary" id="heart-rate">-- bpm</div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-4">
+                            <div class="border rounded-lg p-4 d-flex flex-column align-items-center bg-success-light">
+                                <h2 class="h6 font-weight-semibold mb-3 text-success">
+                                    <i class="fas fa-lungs"></i> SpO<sub>2</sub>
+                                </h2>
+                                <div class="h5 font-weight-medium text-success" id="spo2">--%</div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-4">
+                            <div class="border rounded-lg p-4 d-flex flex-column align-items-center bg-warning-light">
+                                <h2 class="h6 font-weight-semibold mb-3 text-warning">
+                                    <i class="fas fa-thermometer-half"></i> Temperature
+                                </h2>
+                                <div class="h5 font-weight-medium text-warning" id="temperature">--°C</div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-4">
+                            <div class="border rounded-lg p-4 d-flex flex-column align-items-center bg-danger-light">
+                                <h2 class="h6 font-weight-semibold mb-3 text-danger">
+                                    <i class="fas fa-tachometer-alt"></i> Blood Pressure
+                                </h2>
+                                <div class="h5 font-weight-medium text-danger" id="blood-pressure">-- mmHg</div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-danger btn-block mb-4 font-weight-semibold">EMERGENCY</button>
+                    <div class="d-flex justify-content-between mb-4">
+                        <span class="h6 font-weight-semibold text-secondary">Device status</span>
+                        <span class="h6 font-weight-semibold text-secondary" id="device-status">Disconnected</span>
+                    </div>
+                    <nav class="nav nav-pills nav-fill">
+                        <a class="nav-link text-secondary" href="homeDashboard.html">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                        <a class="nav-link text-secondary" href="HealthHistory.html">
+                            <i class="fas fa-history"></i> History
+                        </a>
+                        <a class="nav-link text-secondary" href="Notifications.html">
+                            <i class="fas fa-bell"></i> Notifications
+                        </a>
+                        <a class="nav-link text-secondary" href="Profile.html">
+                            <i class="fas fa-user"></i> Profile
+                        </a>
+                    </nav>
+                </div>
+            </div>
         </div>
-        <div class="row mb-4">
-            <div class="col-6 mb-4">
-                <div class="border rounded-lg p-4 d-flex flex-column align-items-center bg-primary-light">
-                    <h2 class="h6 font-weight-semibold mb-3 text-primary">
-                        Heart Rate
-                    </h2>
-                    <img alt="Heart Rate Icon" class="mb-3" height="80"
-                        src="https://placehold.co/80x80?text=Heart+Rate+Icon" width="80" />
-                    <div class="h5 font-weight-medium text-primary" id="heart-rate">
-                        -- bpm
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 mb-4">
-                <div class="border rounded-lg p-4 d-flex flex-column align-items-center bg-success-light">
-                    <h2 class="h6 font-weight-semibold mb-3 text-success">
-                        SpO
-                        <sub>
-                            2
-                        </sub>
-                    </h2>
-                    <img alt="SpO2 Icon" class="mb-3" height="80" src="https://placehold.co/80x80?text=SpO2+Icon"
-                        width="80" />
-                    <div class="h5 font-weight-medium text-success" id="spo2">
-                        --%
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 mb-4">
-                <div class="border rounded-lg p-4 d-flex flex-column align-items-center bg-warning-light">
-                    <h2 class="h6 font-weight-semibold mb-3 text-warning">
-                        Temperature
-                    </h2>
-                    <img alt="Temperature Icon" class="mb-3" height="80"
-                        src="https://placehold.co/80x80?text=Temperature+Icon" width="80" />
-                    <div class="h5 font-weight-medium text-warning" id="temperature">
-                        --°C
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 mb-4">
-                <div class="border rounded-lg p-4 d-flex flex-column align-items-center bg-danger-light">
-                    <h2 class="h6 font-weight-semibold mb-3 text-danger">
-                        Blood Pressure
-                    </h2>
-                    <img alt="Blood Pressure Icon" class="mb-3" height="80"
-                        src="https://placehold.co/80x80?text=Blood+Pressure+Icon" width="80" />
-                    <div class="h5 font-weight-medium text-danger" id="blood-pressure">
-                        -- mmHg
-                    </div>
-                </div>
-            </div>
-        </div>
-        <button class="btn btn-danger btn-block mb-4 font-weight-semibold">
-            EMERGENCY
-        </button>
-        <div class="d-flex justify-content-between mb-4">
-            <span class="h6 font-weight-semibold text-secondary">
-                Device status
-            </span>
-            <span class="h6 font-weight-semibold text-secondary" id="device-status">
-                Disconnected
-            </span>
-        </div>
-        <nav class="nav nav-pills nav-fill">
-            <a class="nav-link text-secondary" href="homeDashboard.html">
-                <i class="fas fa-home">
-                </i>
-                Home
-            </a>
-            <a class="nav-link text-secondary" href="HealthHistory.html">
-                <i class="fas fa-history">
-                </i>
-                History
-            </a>
-            <a class="nav-link text-secondary" href="Notifications.html">
-                <i class="fas fa-bell">
-                </i>
-                Notifications
-            </a>
-            <a class="nav-link text-secondary" href="Profile.html">
-                <i class="fas fa-user">
-                </i>
-                Profile
-            </a>
-        </nav>
     </div>
     <script>
-        // Your web app's Firebase configuration
+        // Firebase Config & Init
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            databaseURL: "YOUR_DATABASE_URL",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyCA-QB0_T3Ano-0iIy7XME-opFc6MZXzRg",
+            authDomain: "safeheart-2d878.firebaseapp.com",
+            databaseURL: "https://safeheart-2d878-default-rtdb.firebaseio.com",
+            projectId: "safeheart-2d878",
+            storageBucket: "safeheart-2d878.appspot.com",
+            messagingSenderId: "968110391488",
+            appId: "1:968110391488:web:235a04d5b59205b1076d25"
         };
 
-        // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Function to update the dashboard with data from Firebase
-        function updateDashboard() {
-            const heartRateRef = database.ref('heart-rate');
-            const spo2Ref = database.ref('spo2');
-            const temperatureRef = database.ref('temperature');
-            const bloodPressureRef = database.ref('blood-pressure');
-            const deviceStatusRef = database.ref('device-status');
+            // const deviceKey = sessionStorage.getItem('deviceKey');
+            const heartrate = document.getElementById('heart-rate');
+            const temperature = document.getElementById('temperature');
+            const bloodPressure = document.getElementById('blood-pressure');
+            const spo2 = document.getElementById('spo2');
+            const deviceKey = sessionStorage.getItem("deviceKey"); // استرجاع الـ deviceKey
+            database.ref(`devices/${deviceKey}`).once('value')
+                    .then((snapshot) => {
+                        const data = snapshot.val();
+                        console.log(data); // عرض البيانات في وحدة التحكم
+                    })
+                    .catch((error) => {
+                        console.error("Error reading data: ", error);
+                    });
+                if (deviceKey) {
+                    const deviceRef = db.ref("Devices/" + deviceKey);
+                    deviceRef.once("value").then(snapshot => {
+                        if (snapshot.exists()) {
+                            const deviceData = snapshot.val();
+                            // هنا يمكنك استخدام البيانات كما تريد
+                            console.log(deviceData); // عرض البيانات في وحدة التحكم
 
-            heartRateRef.on('value', (snapshot) => {
-                const heartRate = snapshot.val();
-                document.getElementById('heart-rate').innerText = heartRate ? heartRate + ' bpm' : '-- bpm';
-            });
+                            // عرض البيانات في الصفحة
+                            for (const date in deviceData) {
+                                const dateData = deviceData[date];
+                                for (const time in dateData) {
+                                    const measurement = dateData[time];
+                                    // يمكنك الآن استخدام القياسات كما تريد
+                                    console.log(`Date: ${date}, Time: ${time}, SpO2: ${measurement.SpO2}, Heart Rate: ${measurement.heartRate}`);
 
-            spo2Ref.on('value', (snapshot) => {
-                const spo2 = snapshot.val();
-                document.getElementById('spo2').innerText = spo2 ? spo2 + '%' : '--%';
-            });
+                                    // عرض البيانات في الصفحة
+                                    const dataContainer = document.getElementById("data-container");
+                                    const dataItem = document.createElement("div");
+                                    dataItem.className = "data-item";
+                                    dataItem.innerHTML = `Date: ${date}, Time: ${time}, SpO2: ${measurement.SpO2}, Heart Rate: ${measurement.heartRate}`;
+                                    dataContainer.appendChild(dataItem);
+                                }
+                            }
+                        } else {
+                            alert("No data found for this device.");
+                        }
+                    }).catch(error => {
+                        console.error("Error fetching data: ", error);
+                    });
+                } else {
+                    alert("Device key not found.");
+                    window.location.href = "./login.html"; // إعادة توجيه المستخدم إلى صفحة تسجيل الدخول
+                }
+                    
+            
 
-            temperatureRef.on('value', (snapshot) => {
-                const temperature = snapshot.val();
-                document.getElementById('temperature').innerText = temperature ? temperature + '°C' : '--°C';
-            });
+            // // الخطوة 1: البحث عن الـ deviceKey باستخدام الإيميل
+            // firebase.database().ref("pathint").orderByChild("mail").equalTo(userEmail).once("value", snapshot => {
+            //     if (snapshot.exists()) {
+            //         const userData = snapshot.val();
 
-            bloodPressureRef.on('value', (snapshot) => {
-                const bloodPressure = snapshot.val();
-                document.getElementById('blood-pressure').innerText = bloodPressure ? bloodPressure + ' mmHg' : '-- mmHg';
-            });
+            //         let deviceKey;
+            //         // استخراج الـ deviceKey من بيانات المستخدم
+            //         for (let key in userData) {
+            //             if (userData[key].mail === userEmail) {
+            //                 deviceKey = userData[key].deviceKey; // تخزين الـ deviceKey
+            //                 break;
+            //             }
+            //         }
 
-            deviceStatusRef.on('value', (snapshot) => {
-                const deviceStatus = snapshot.val();
-                document.getElementById('device-status').innerText = deviceStatus ? deviceStatus : 'Disconnected';
-            });
-        }
+            //         // إذا تم العثور على الـ deviceKey
+            //         if (deviceKey) {
+            //             console.log("Device Key:", deviceKey);
 
-        // Initial update
-        updateDashboard();
+            //             // الخطوة 2: استخدام الـ deviceKey للوصول إلى بيانات الجهاز في Firebase
+            //             firebase.database().ref("Devices").child(deviceKey).once("value", deviceSnapshot => {
+            //                 if (deviceSnapshot.exists()) {
+            //                     const deviceData = deviceSnapshot.val();
+
+            //                     // الخطوة 3: عرض البيانات المتعلقة بالجهاز
+            //                     console.log("Device Data:", deviceData);
+
+            //                     // على سبيل المثال، عرض البيانات في HTML:
+            //                     displayDeviceData(deviceData); // يمكنك استبدال هذه الدالة بكود لعرض البيانات على الصفحة
+            //                 } else {
+            //                     console.log("No device data found for this deviceKey.");
+            //                 }
+            //             });
+            //         } else {
+            //             console.log("No deviceKey found for this email.");
+            //         }
+            //     } else {
+            //         console.log("User not found.");
+            //     }
+            // });
+
+            // دالة لعرض بيانات الجهاز (مثال)
+            function displayDeviceData(data) {
+                // في هذا المثال، سنعرض بعض البيانات في صفحة HTML
+                document.getElementById("spO2").innerText = `SpO2: ${data["2025-04-11"]["17-47"].SpO2}`;
+                document.getElementById("ambientTemperature").innerText = `Ambient Temperature: ${data["2025-04-11"]["17-47"].ambientTemperature}`;
+                document.getElementById("heartRate").innerText = `Heart Rate: ${data["2025-04-11"]["17-47"].heartRate}`;
+                document.getElementById("objectTemperature").innerText = `Object Temperature: ${data["2025-04-11"]["17-47"].objectTemperature}`;
+            }
+
     </script>
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js">
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js">
