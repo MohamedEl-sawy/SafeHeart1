@@ -2,9 +2,9 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>User Profile</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <style>
@@ -16,6 +16,8 @@
             flex-direction: column;
             align-items: center;
             padding: 30px;
+            min-height: 100vh;
+            margin: 0;
         }
 
         .profile-container {
@@ -24,7 +26,7 @@
             border-radius: 15px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
         }
 
         h1 {
@@ -35,6 +37,7 @@
         .data-item {
             margin: 10px 0;
             font-size: 18px;
+            word-wrap: break-word;
         }
 
         .label {
@@ -69,11 +72,20 @@
         <h1>Welcome, <span id="user-name">...</span></h1>
         <div class="data-item"><span class="label">Email:</span> <span id="user-email"></span></div>
         <div class="data-item"><span class="label">Date of Birth:</span> <span id="user-dob"></span></div>
-        <div class="data-item"><span class="label">Preferred Doctor:</span> <span id="user-doctor"></span></div>
+        <div class="data-item"><span class="label">Gender:</span> <span id="user-gender"></span></div>
+        <div class="data-item"><span class="label">Phone Number:</span> <span id="user-phone"></span></div>
+        <div class="data-item"><span class="label">Address:</span> <span id="user-address"></span></div>
         <div class="data-item"><span class="label">Medical History:</span> <span id="user-medical-history"></span></div>
-        <div class="data-item"><span class="label">Emergency Contact:</span> <span id="user-emergency-name"></span> -
-            <span id="user-emergency-phone"></span>
+        <div class="data-item"><span class="label">Preferred Doctor:</span> <span id="user-doctor"></span></div>
+        <div class="data-item"><span class="label">Patient Status:</span> <span id="user-isPatient"></span></div>
+        <div class="data-item" id="illnessDiv" style="display:none;"><span class="label">Illness:</span> <span
+                id="user-illness"></span></div>
+        <div class="data-item"><span class="label">Emergency Contact Name:</span> <span id="user-emergency-name"></span>
         </div>
+        <div class="data-item"><span class="label">Emergency Contact Phone:</span> <span
+                id="user-emergency-phone"></span></div>
+        <div class="data-item"><span class="label">Device Key:</span> <span id="user-deviceKey"></span></div>
+
         <div class="buttons">
             <button onclick="logout()">Log Out</button>
             <button onclick="deleteAccount()">Delete Account</button>
@@ -88,15 +100,18 @@
             projectId: "safeheart-2d878",
             storageBucket: "safeheart-2d878.appspot.com",
             messagingSenderId: "968110391488",
-            appId: "1:968110391488:web:235a04d5b59205b1076d25"
+            appId: "1:968110391488 web:235a04d5b59205b1076d25"
         };
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const userId = sessionStorage.getItem("oggedInUserId"); // Correct key for user ID
+        const userId = sessionStorage.getItem("loggedInUserId");
 
-            if (userId) {
+            if (!userId) {
+                alert("Please login first.");
+                window.location.href = "./login.html";
+            } else {
                 const userRef = db.ref("pathint/" + userId);
                 userRef.once("value").then(snapshot => {
                     const data = snapshot.val();
@@ -104,30 +119,41 @@
                         document.getElementById("user-name").textContent = data.FullName || "N/A";
                         document.getElementById("user-email").textContent = data.mail || "N/A";
                         document.getElementById("user-dob").textContent = data.dateofbirth || "N/A";
-                        document.getElementById("user-doctor").textContent = data.PreferredDoctor || "N/A";
+                        document.getElementById("user-gender").textContent = data.gender || "N/A";
+                        document.getElementById("user-phone").textContent = data.phone || "N/A";
+                        document.getElementById("user-address").textContent = data.address || "N/A";
                         document.getElementById("user-medical-history").textContent = data.medicalHistory || "N/A";
+                        document.getElementById("user-doctor").textContent = data.PreferredDoctor || "N/A";
+                        document.getElementById("user-isPatient").textContent = data.isPatient || "N/A";
+                        if (data.isPatient === "yes" && data.illness) {
+                            document.getElementById("illnessDiv").style.display = "block";
+                            document.getElementById("user-illness").textContent = data.illness;
+                        }
                         document.getElementById("user-emergency-name").textContent = data.nameEmergency || "N/A";
                         document.getElementById("user-emergency-phone").textContent = data.phoneEmergency || "N/A";
+                        document.getElementById("user-deviceKey").textContent = data.deviceKey || "N/A";
+                    } else {
+                        alert("User  data not found.");
+                        window.location.href = "./login.html";
                     }
                 }).catch(error => {
-                    console.error("Error fetching user data: ", error);
+                    alert("Error fetching user data: " + error.message);
+                    window.location.href = "./login.html";
                 });
-            } else {
-                alert("User  not logged in.");
-                window.location.href = "./login.html"; // Redirect to login page
             }
-
         function logout() {
-            sessionStorage.removeItem("loggedInUserId");
+            sessionStorage.removeItem("loggedInUser Id");
             window.location.href = "./login.html";
         }
 
         function deleteAccount() {
             if (confirm("Are you sure you want to delete your account?")) {
-                firebase.database().ref("pathint/" + userId).remove().then(() => {
-                    sessionStorage.removeItem("loggedInUserId");
+                db.ref("pathint/" + userId).remove().then(() => {
+                    sessionStorage.removeItem("loggedInUser Id");
                     alert("Account deleted.");
                     window.location.href = "./login.html";
+                }).catch(error => {
+                    alert("Error deleting account: " + error.message);
                 });
             }
         }
