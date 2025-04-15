@@ -1,40 +1,17 @@
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>
-        Home Dashboard
-    </title>
+    <title>Home Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
-    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js">
-    </script>
-    <!-- Add Firebase products that you want to use -->
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js">
-    </script>
-    <!-- <script>
-        function updateDashboard(deviceKey) {
-                const deviceRef = database.ref('Devices/' + deviceKey);
 
-                deviceRef.on('value', (snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        const latestData = Object.values(data).pop(); // Get the latest data
-                        document.getElementById('heart-rate').innerText = latestData.heartRate ? latestData.heartRate + ' bpm' : '-- bpm';
-                        document.getElementById('spo2').innerText = latestData.SpO2 ? latestData.SpO2 + '%' : '--%';
-                        document.getElementById('temperature').innerText = latestData.ambientTemperature ? latestData.ambientTemperature + '°C' : '--°C';
-                        document.getElementById('blood-pressure').innerText = latestData.bloodPressure ? latestData.bloodPressure + ' mmHg' : '-- mmHg';
-                    }
-                });
-            }
+    <!-- Firebase v8 SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-            // Call this function in your home dashboard script
-            const urlParams = new URLSearchParams(window.location.search);
-            const deviceKey = urlParams.get('deviceKey');
-            updateDashboard(deviceKey);
-    </script> -->
     <style>
         .nav-link {
             font-size: 1.1rem;
@@ -102,7 +79,7 @@
                         <a class="nav-link text-secondary" href="Notifications.html">
                             <i class="fas fa-bell"></i> Notifications
                         </a>
-                        <a class="nav-link text-secondary" href="./profile.html">
+                        <a class="nav-link text-secondary" href="Profile.html">
                             <i class="fas fa-user"></i> Profile
                         </a>
                     </nav>
@@ -110,8 +87,9 @@
             </div>
         </div>
     </div>
+
     <script>
-        // Firebase Config & Init
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyCA-QB0_T3Ano-0iIy7XME-opFc6MZXzRg",
             authDomain: "safeheart-2d878.firebaseapp.com",
@@ -122,117 +100,59 @@
             appId: "1:968110391488:web:235a04d5b59205b1076d25"
         };
 
-        const app = firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-            // const deviceKey = sessionStorage.getItem('deviceKey');
-            const heartrate = document.getElementById('heart-rate');
-            const temperature = document.getElementById('temperature');
-            const bloodPressure = document.getElementById('blood-pressure');
-            const spo2 = document.getElementById('spo2');
-            const deviceKey = sessionStorage.getItem("deviceKey"); // استرجاع الـ deviceKey
-            database.ref(`devices/${deviceKey}`).once('value')
-                    .then((snapshot) => {
-                        const data = snapshot.val();
-                        console.log(data); // عرض البيانات في وحدة التحكم
-                    })
-                    .catch((error) => {
-                        console.error("Error reading data: ", error);
-                    });
-                if (deviceKey) {
-                    const deviceRef = db.ref("Devices/" + deviceKey);
-                    deviceRef.once("value").then(snapshot => {
-                        if (snapshot.exists()) {
-                            const deviceData = snapshot.val();
-                            // هنا يمكنك استخدام البيانات كما تريد
-                            console.log(deviceData); // عرض البيانات في وحدة التحكم
+        const deviceKey = sessionStorage.getItem("deviceKey");
 
-                            // عرض البيانات في الصفحة
-                            for (const date in deviceData) {
-                                const dateData = deviceData[date];
-                                for (const time in dateData) {
-                                    const measurement = dateData[time];
-                                    // يمكنك الآن استخدام القياسات كما تريد
-                                    console.log(`Date: ${date}, Time: ${time}, SpO2: ${measurement.SpO2}, Heart Rate: ${measurement.heartRate}`);
+        const heartRateEl = document.getElementById('heart-rate');
+        const temperatureEl = document.getElementById('temperature');
+        const bloodPressureEl = document.getElementById('blood-pressure');
+        const spo2El = document.getElementById('spo2');
+        const deviceStatusEl = document.getElementById('device-status');
 
-                                    // عرض البيانات في الصفحة
-                                    const dataContainer = document.getElementById("data-container");
-                                    const dataItem = document.createElement("div");
-                                    dataItem.className = "data-item";
-                                    dataItem.innerHTML = `Date: ${date}, Time: ${time}, SpO2: ${measurement.SpO2}, Heart Rate: ${measurement.heartRate}`;
-                                    dataContainer.appendChild(dataItem);
-                                }
-                            }
-                        } else {
-                            alert("No data found for this device.");
-                        }
-                    }).catch(error => {
-                        console.error("Error fetching data: ", error);
-                    });
+        if (!deviceKey) {
+            alert("Please login or select a device first.");
+            window.location.href = "./login.html";
+        } else {
+            const userRef = database.ref("Devices/" + deviceKey);
+            userRef.once("value").then(snapshot => {
+                const deviceData = snapshot.val();
+
+                if (deviceData) {
+                    const dates = Object.keys(deviceData);
+                    const latestDate = dates[dates.length - 1];
+                    const times = Object.keys(deviceData[latestDate]);
+                    const latestTime = times[times.length - 1];
+                    const latestData = deviceData[latestDate][latestTime];
+
+                    heartRateEl.innerText = `${latestData.heartRate || "--"} bpm`;
+                    spo2El.innerText = `${latestData.SpO2 || "--"}%`;
+                    temperatureEl.innerText = `${latestData.objectTemperature || "--"}°C`;
+                    bloodPressureEl.innerText = `${latestData.bloodPressure || "--"} mmHg`;
+
+                    deviceStatusEl.innerText = "Connected";
+                    deviceStatusEl.classList.remove("text-secondary");
+                    deviceStatusEl.classList.add("text-success");
                 } else {
-                    alert("Device key not found.");
-                    window.location.href = "./login.html"; // إعادة توجيه المستخدم إلى صفحة تسجيل الدخول
+                    heartRateEl.innerText = "-- bpm";
+                    spo2El.innerText = "--%";
+                    temperatureEl.innerText = "--°C";
+                    bloodPressureEl.innerText = "-- mmHg";
+                    deviceStatusEl.innerText = "No Data";
+                    deviceStatusEl.classList.add("text-warning");
                 }
-                    
-            
-
-            // // الخطوة 1: البحث عن الـ deviceKey باستخدام الإيميل
-            // firebase.database().ref("pathint").orderByChild("mail").equalTo(userEmail).once("value", snapshot => {
-            //     if (snapshot.exists()) {
-            //         const userData = snapshot.val();
-
-            //         let deviceKey;
-            //         // استخراج الـ deviceKey من بيانات المستخدم
-            //         for (let key in userData) {
-            //             if (userData[key].mail === userEmail) {
-            //                 deviceKey = userData[key].deviceKey; // تخزين الـ deviceKey
-            //                 break;
-            //             }
-            //         }
-
-            //         // إذا تم العثور على الـ deviceKey
-            //         if (deviceKey) {
-            //             console.log("Device Key:", deviceKey);
-
-            //             // الخطوة 2: استخدام الـ deviceKey للوصول إلى بيانات الجهاز في Firebase
-            //             firebase.database().ref("Devices").child(deviceKey).once("value", deviceSnapshot => {
-            //                 if (deviceSnapshot.exists()) {
-            //                     const deviceData = deviceSnapshot.val();
-
-            //                     // الخطوة 3: عرض البيانات المتعلقة بالجهاز
-            //                     console.log("Device Data:", deviceData);
-
-            //                     // على سبيل المثال، عرض البيانات في HTML:
-            //                     displayDeviceData(deviceData); // يمكنك استبدال هذه الدالة بكود لعرض البيانات على الصفحة
-            //                 } else {
-            //                     console.log("No device data found for this deviceKey.");
-            //                 }
-            //             });
-            //         } else {
-            //             console.log("No deviceKey found for this email.");
-            //         }
-            //     } else {
-            //         console.log("User not found.");
-            //     }
-            // });
-
-            // دالة لعرض بيانات الجهاز (مثال)
-            function displayDeviceData(data) {
-                // في هذا المثال، سنعرض بعض البيانات في صفحة HTML
-                document.getElementById("spO2").innerText = `SpO2: ${data["2025-04-11"]["17-47"].SpO2}`;
-                document.getElementById("ambientTemperature").innerText = `Ambient Temperature: ${data["2025-04-11"]["17-47"].ambientTemperature}`;
-                document.getElementById("heartRate").innerText = `Heart Rate: ${data["2025-04-11"]["17-47"].heartRate}`;
-                document.getElementById("objectTemperature").innerText = `Object Temperature: ${data["2025-04-11"]["17-47"].objectTemperature}`;
-            }
-
+            }).catch(error => {
+                console.error("Error reading device data:", error);
+                deviceStatusEl.innerText = "Error";
+                deviceStatusEl.classList.add("text-danger");
+            });
+        }
     </script>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js">
-    </script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js">
-    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 
-</html>   
+</html>
