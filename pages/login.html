@@ -10,7 +10,6 @@
     <style>
         body {
             background-color: #e0f7fa;
-            /* height: 100vh; */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -19,7 +18,6 @@
         .form-container {
             width: 100%;
             max-width: 500px;
-            /* Set max width for the form */
             padding: 20px;
             background-color: white;
             border-radius: 10px;
@@ -28,9 +26,7 @@
 
         .logo {
             width: 100px;
-            /* Set logo width */
             height: auto;
-            /* Maintain aspect ratio */
         }
 
         .fade-in {
@@ -63,6 +59,7 @@
     </style>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCA-QB0_T3Ano-0iIy7XME-opFc6MZXzRg",
@@ -76,6 +73,8 @@
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        const storage = firebase.storage();
+        const storageRef = storage.ref();
 
         function showSignup() {
             document.getElementById('loginForm').classList.add('hidden');
@@ -107,24 +106,24 @@
         }
 
         function validatePhone(phone) {
-            const phonePattern = /^\+?[0-9]{10,15}$/; // Adjust the pattern as needed
+            const phonePattern = /^\+?[0-9]{10,15}$/;
             return phonePattern.test(phone);
         }
 
         function validatePassword(password) {
-            const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; // At least 8 characters, 1 letter and 1 number
+            const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
             return passwordPattern.test(password);
         }
 
         function validateFullName(name) {
-            const namePattern = /^[A-Za-z]+\s[A-Za-z]+$/; // At least two words
+            const namePattern = /^[A-Za-z]+\s[A-Za-z]+$/;
             return namePattern.test(name);
         }
 
         function checkPasswordMatch() {
             const password = document.getElementById("newPassword").value;
             const confirmPassword = document.getElementById("confirmPassword").value;
-            const messageElement = document.getElementById("passwordMatchMessage ");
+            const messageElement = document.getElementById(" passwordMatchMessage");
 
             if (password !== confirmPassword) {
                 messageElement.innerText = "Passwords do not match.";
@@ -136,255 +135,166 @@
         }
 
         function validateFile() {
-                const fileInput = document.getElementById('medicalHistory');
-                const fileMessage = document.getElementById('fileMessage');
-                const file = fileInput.files[0];
+            const fileInput = document.getElementById('medicalHistory');
+            const fileMessage = document.getElementById('fileMessage');
+            const file = fileInput.files[0];
 
-                if (file) {
-                    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
-                    if (!allowedTypes.includes(file.type)) {
-                        fileMessage.textContent = 'Please upload a valid file (PDF, DOC, DOCX, TXT).';
-                        fileMessage.classList.remove('hidden');
-                        return false;
-                    }
-                    fileMessage.classList.add('hidden');
-                    return true;
-                } else {
-                    fileMessage.textContent = 'Please select a file.';
+            if (file) {
+                const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+                if (!allowedTypes.includes(file.type)) {
+                    fileMessage.textContent = 'Please upload a valid file (PDF, DOC, DOCX, TXT).';
                     fileMessage.classList.remove('hidden');
                     return false;
                 }
+                fileMessage.classList.add('hidden');
+                return true;
+            } else {
+                fileMessage.textContent = 'Please select a file.';
+                fileMessage.classList.remove('hidden');
+                return false;
             }
+        }
 
-            const storage = firebase.storage();
-                const storageRef = storage.ref();
+        async function uploadFile(file) {
+            const fileRef = storageRef.child('medicalHistory/' + file.name);
+            try {
+                await fileRef.put(file);
+                const downloadURL = await fileRef.getDownloadURL();
+                return downloadURL;
+            } catch (error) {
+                console.error('Error uploading file:', error);
+                return null;
+            }
+        }
 
-                async function uploadFile(file) {
-                    const fileRef = storageRef.child('medicalHistory/' + file.name);
-                    try {
-                        await fileRef.put(file);
-                        const downloadURL = await fileRef.getDownloadURL();
-                        return downloadURL;
-                    } catch (error) {
-                        console.error('Error uploading file:', error);
-                        return null;
-                    }
-                }
         async function sendddata(event) {
+                event.preventDefault();
+
+                var name = document.getElementById("fullName").value;
+                var datebirth = document.getElementById("dob").value;
+                var gender = document.getElementById("gender").value;
+                var phone = document.getElementById("phone").value;
+                var mail = document.getElementById("signupEmail").value;
+                var password = document.getElementById("newPassword").value;
+                var address = document.getElementById("address").value;
+                var medicalHistory = document.getElementById("history").value;
+                var PreferredDoctor = document.getElementById("doctorType").value;
+                var nameEmergency = document.getElementById("emergencyName").value;
+                var phoneEmergency = document.getElementById("emergencyPhone").value;
+                var deviceKey = document.getElementById("deviceKey").value;
+
+                var pathint = {
+                    FullName: name,
+                    dateofbirth: datebirth,
+                    gender: gender,
+                    phone: phone,
+                    mail: mail,
+                    password: password,
+                    address: address,
+                    medicalHistory: medicalHistory,
+                    PreferredDoctor: PreferredDoctor,
+                    nameEmergency: nameEmergency,
+                    phoneEmergency: phoneEmergency,
+                    deviceKey: deviceKey
+                };
+
+                console.log("Sending Data:", pathint);
+
+                try {
+                    var res = await fetch("https://safeheart-2d878-default-rtdb.firebaseio.com//pathint.json", {
+                        method: "POST",
+                        headers: { 'Content-type': 'application/json' },
+                        body: JSON.stringify(pathint)
+                    });
+                    var res2 = await res.json();
+                    console.log("Response from Firebase:", res2);
+
+                    clear(); // Make sure you define this function to reset form inputs if needed
+
+                } catch (error) {
+                    console.error("Error occurred:", error);
+                }
+            }
+
+        async function login(event) {
             event.preventDefault();
+            const email = document.getElementById("emaillogin").value.trim();
+            const password = document.getElementById("passwordlogin").value.trim();
+            const msg = document.getElementById('message');
+            msg.textContent = '';
 
-            var name = document.getElementById("fullName").value;
-            var datebirth = document.getElementById("dob").value;
-            var gender = document.getElementById("gender").value;
-            var phone = document.getElementById("phone").value;
-            var mail = document.getElementById("signupEmail").value;
-            var password = document.getElementById("newPassword").value;
-            var address = document.getElementById("address").value;
-            var medicalHistory = document.getElementById("history").value;
-            var PreferredDoctor = document.getElementById("doctorType").value;
-            var nameEmergency = document.getElementById("emergencyName").value;
-            var phoneEmergency = document.getElementById("emergencyPhone").value;
-            var deviceKey = document.getElementById("deviceKey").value;
-            var isPatient = document.getElementById("isPatient").value; // New field for patient status
-            var illness = document.getElementById("illness").value;
-            const file = document.getElementById('medicalHistory').files[0];
-            const downloadURL = await uploadFile(file);
-
-            if (!validateFullName(name)) {
-                document.getElementById("fullNameMessage").innerText = "Please enter at least two names separated by a space.";
-                return;
-            }
-            if (!validateEmail(mail)) {
-                document.getElementById("emailMessage").innerText = "Invalid email address.";
-                return;
-            }
-            if (!validatePhone(phone)) {
-                document.getElementById("phoneMessage").innerText = "Invalid phone number.";
+            if (!validateEmail(email)) {
+                document.getElementById("loginEmailMessage").innerText = "Invalid email address.";
                 return;
             }
             if (!validatePassword(password)) {
-                document.getElementById("passwordMessage").innerText = "Password must be at least 8 characters long, with at least one letter and one number.";
+                document.getElementById("loginPasswordMessage").innerText = "Password must be at least 8 characters long, with at least one letter and one number.";
                 return;
             }
-            if (!validateFile()) return;
 
-            var pathint = {
-                FullName: name,
-                dateofbirth: datebirth,
-                gender: gender,
-                phone: phone,
-                mail: mail,
-                password: password,
-                address: address,
-                medicalHistory: medicalHistory,
-                PreferredDoctor: PreferredDoctor,
-                nameEmergency: nameEmergency,
-                phoneEmergency: phoneEmergency,
-                deviceKey: deviceKey,
-                isPatient: isPatient,
-                illness: isPatient === "yes" ? illness : null, // Include illness only if the user is a patient
-                medicalHistorypdf: downloadURL
-            };
+            db.ref('pathint').once('value')
+                .then(snapshot => {
+                    let found = false;
 
-            console.log("Sending Data:", pathint);
+                    snapshot.forEach(childSnapshot => {
+                        const user = childSnapshot.val();
+                        const userId = childSnapshot.key;
 
-            try {
-                var res = await fetch("https://safeheart-2d878-default-rtdb.firebaseio.com/pathint.json", {
-                    method: "POST",
-                    headers: { 'Content-type': 'application/json' },
-                    body: JSON.stringify(pathint)
+                        if (user.mail === email && user.password === password) {
+                            found = true;
+                            sessionStorage.setItem('loggedInUser Id', userId);
+                            sessionStorage.setItem('deviceKey', user.deviceKey);
+                            window.location.href = "./homeDashboard.html?deviceKey=" + user.deviceKey;
+                        }
+                    });
+
+                    if (!found) {
+                        msg.textContent = "Invalid email or password.";
+                    }
+                })
+                .catch(error => {
+                    msg.textContent = "Error: " + error.message;
                 });
-                var res2 = await res.json();
-                console.log("Response from Firebase:", res2);
-                alert("Signup successful!");
-                clear(); // Make sure you define this function to reset form inputs if needed
-                showLogin();
-            } catch (error) {
-                console.error("Error occurred:", error);
-            }
         }
 
-        async function login(event) {
-                event.preventDefault();
-                const email = document.getElementById("emaillogin").value.trim();
-                const password = document.getElementById("passwordlogin").value.trim();
-                const msg = document.getElementById('message');
-                msg.textContent = '';
+        const userId = sessionStorage.getItem("loggedInUser  Id");
 
-                if (!validateEmail(email)) {
-                    document.getElementById("loginEmailMessage").innerText = "Invalid email address.";
-                    return;
-                }
-                if (!validatePassword(password)) {
-                    document.getElementById("loginPasswordMessage").innerText = "Password must be at least 8 characters long, with at least one letter and one number.";
-                    return;
-                }
-
-                db.ref('pathint').once('value')
-                    .then(snapshot => {
-                        let found = false;
-
-                        snapshot.forEach(childSnapshot => {
-                            const user = childSnapshot.val();
-                            const userId = childSnapshot.key;
-
-                            if (user.mail === email && user.password === password) {
-                                found = true;
-                                sessionStorage.setItem('loggedInUserId' , userId);
-                                sessionStorage.setItem('deviceKey', user.deviceKey);
-                                window.location.href = "./homeDashboard.html?deviceKey=" + user.deviceKey;
-                            }  
-                        });
-
-                        if (!found) {
-                            msg.textContent = "Invalid email or password.";
-                        }
-                    })
-                    .catch(error => {
-                        msg.textContent = "Error: " + error.message;
-                    });
-            }
-
-            const userId = sessionStorage.getItem("loggedInUser  Id"); // Correct key for user ID
-
-                if (!userId) {
-                    const userRef = db.ref("pathint/" + userId);
-                    userRef.once("value").then(snapshot => {
-                        const data = snapshot.val();
-                        if (data) {
-                            document.getElementById("user-name").textContent = data.FullName || "N/A";
-                            document.getElementById("user-email").textContent = data.mail || "N/A";
-                            document.getElementById("user-dob").textContent = data.dateofbirth || "N/A";
-                            document.getElementById("user-doctor").textContent = data.PreferredDoctor || "N/A";
-                            document.getElementById("user-medical-history").textContent = data.medicalHistory || "N/A";
-                            document.getElementById("user-emergency-name").textContent = data.nameEmergency || "N/A";
-                            document.getElementById("user-emergency-phone").textContent = data.phoneEmergency || "N/A";
-                        } else {
-                            alert("No data found for this user.");
-                        }
-                    }).catch(error => {
-                        console.error("Error fetching user data: ", error);
-                    });
+        if (!userId) {
+            const userRef = db.ref("pathint/" + userId);
+            userRef.once("value").then(snapshot => {
+                const data = snapshot.val();
+                if (data) {
+                    document.getElementById("user-name").textContent = data.FullName || "N/A";
+                    document.getElementById("user-email").textContent = data.mail || "N/A";
+                    document.getElementById("user-dob").textContent = data.dateofbirth || "N/A";
+                    document.getElementById("user-doctor").textContent = data.PreferredDoctor || "N/A";
+                    document.getElementById("user-medical-history").textContent = data.medicalHistory || "N/A";
+                    document.getElementById("user-emergency-name").textContent = data.nameEmergency || "N/A";
+                    document.getElementById("user-emergency-phone").textContent = data.phoneEmergency || "N/A";
                 } else {
-                    alert("User  not logged in.");
-                    window.location.href = "./login.html"; // Redirect to login page
+                    alert("No data found for this user.");
                 }
-
-        // async function login(event) {
-        //     event.preventDefault();
-        //     var email = document.getElementById("emaillogin").value;
-        //     var password = document.getElementById("passwordlogin").value;
-        //     const msg = document.getElementById('message');
-        //     msg.textContent = '';
-        //     db.ref('pathint').once('value')
-        //         .then(snapshot => {
-        //             let found = false;
-
-        //             snapshot.forEach(childSnapshot => {
-        //                 const user = childSnapshot.val();
-        //                 const userId = childSnapshot.key;
-
-        //                 if (user.mail === email && user.password === password) {
-        //                     found = true;
-        //                     sessionStorage.setItem('loggedInUser Id', userId);
-        //                     // Redirect to home dashboard
-        //                     window.location.href = "./homeDashboard.html?deviceKey=" + user.deviceKey;
-        //                 }
-        //             });
-
-        //             if (!found) {
-        //                 msg.textContent = "Invalid email or password.";
-        //             }
-        //         })
-        //         .catch(error => {
-        //             msg.textContent = "Error: " + error.message;
-        //         });
-
-        //     if (!validateEmail(email)) {
-        //         document.getElementById("loginEmailMessage").innerText = "Invalid email address.";
-        //         return;
-        //     }
-        //     if (!validatePassword(password)) {
-        //         document.getElementById("loginPasswordMessage").innerText = "Password must be at least 8 characters long, with at least one letter and one number.";
-        //         return;
-        //     }
-
-        //     try {
-        //         const snapshot = await fetch("https://safeheart-2d878-default-rtdb.firebaseio.com/pathint.json");
-        //         const data = await snapshot.json();
-        //         const accounts = Object.values(data);
-
-        //         const accountExists = accounts.some(account => account.mail === email && account.password === password);
-
-        //         if (accountExists) {
-        //             window.location.href = "./homeDashboard.html"; // Redirect to homeDashboard.html
-        //         } else {
-        //             document.getElementById("message").innerText = "Account does not exist, you can create a new account.";
-        //             showSignup();
-        //         }
-        //     } catch (error) {
-        //         console.error("Error checking account:", error);
-        //     }
-        // }
+            }).catch(error => {
+                console.error("Error fetching user data: ", error);
+            });
+        } else {
+            alert("User  not logged in.");
+            window.location.href = "./login.html";
+        }
 
         function clear() {
-            document.getElementById("signupForm").reset();
-            document.getElementById("illnessContainer").classList.add('hidden'); // Hide illness input on reset
-            document.querySelectorAll(".error-message").forEach(element => {
-                element.innerText = ""; // Clear all error messages
-                element.classList.add('hidden'); // Hide all error messages });
-            });
-        }
+                document.getElementById("signupForm").reset();
+            }
 
         function toggleIllnessInput() {
-                    const isPatient = document.getElementById("isPatient").value;
-                    const illnessContainer = document.getElementById("illnessContainer");
-                    if (isPatient === "yes") {
-                        illnessContainer.classList.remove('hidden');
-                    } else {
-                        illnessContainer.classList.add('hidden');
-                    }
-                }
+            const isPatient = document.getElementById("isPatient").value;
+            const illnessContainer = document.getElementById("illnessContainer");
+            if (isPatient === "yes") {
+                illnessContainer.classList.remove('hidden');
+            } else {
+                illnessContainer.classList.add('hidden');
+            }
+        }
     </script>
 </head>
 
@@ -411,11 +321,6 @@
                 </div>
                 <p id="loginPasswordMessage" class="error-message hidden"></p>
             </div>
-            <!-- <div class="mb-3">
-                <label for="Device Key" class="form-label required">Device Key</label>
-                <input type="input" class="form-control" id="DeviceKey" required placeholder="on the back of safe heart" />
-                <p id="loginDeviceKey" class="error-message hidden"></p>
-            </div> -->
             <button type="submit" class="btn btn-primary w-100">Login</button>
             <p id="message" class="text-danger mt-2"></p>
             <div class="d-flex justify-content-between mt-3">
@@ -425,9 +330,6 @@
         </form>
 
         <form id="signupForm" class="hidden" onsubmit="sendddata(event)">
-            <!-- <div class="text-center mb-4">
-                <img class="logo" src="../img/354d8dea-33d6-4f38-a13f-3127f64fece3_removalai_preview.png" alt="Logo" />
-            </div> -->
             <div class="mb-3">
                 <label for="fullName" class="form-label required">Full Name</label>
                 <input type="text" class="form-control" id="fullName" required placeholder="John Doe" />
@@ -494,7 +396,6 @@
                     placeholder="List any chronic conditions, allergies, etc."></textarea>
             </div>
             <div class="mb-3">
-                <!-- <label for="medicalHistory" class="form-label required">Upload Medical History</label> -->
                 <input type="file" class="form-control" id="medicalHistory" accept=".pdf,.doc,.docx,.txt" required />
                 <p class="error-message hidden" id="fileMessage"></p>
             </div>
@@ -521,20 +422,20 @@
                     <option value="other">Other</option>
                 </select>
             </div>
-            <h5>Emergency Contact Information</h5>
-            <div class="mb-3">
-                <label for="emergencyName" class="form-label required">Full Name</label>
-                <input type="text" class="form-control" id="emergencyName" required
-                    placeholder="Emergency Contact Name" />
-            </div>
-            <div class="mb-3">
-                <label for="emergencyPhone" class="form-label required">Phone Number</label>
-                <input type="tel" class="form-control" id="emergencyPhone" required placeholder="Emergency Phone" />
-            </div>
-            <button type="submit" class="btn btn-primary w-100">Signup</button>
-            <div class="text-center mt-3">
-                Already have an account? <a href="#" onclick="showLogin()">Login</a>
-            </div>
+            <h <h5>Emergency Contact Information</h5>
+                <div class="mb-3">
+                    <label for="emergencyName" class="form-label required">Full Name</label>
+                    <input type="text" class="form-control" id="emergencyName" required
+                        placeholder="Emergency Contact Name" />
+                </div>
+                <div class="mb-3">
+                    <label for="emergencyPhone" class="form-label required">Phone Number</label>
+                    <input type="tel" class="form-control" id="emergencyPhone" required placeholder="Emergency Phone" />
+                </div>
+                <button type="submit" class="btn btn-primary w-100" onclick="sendddata(event)" >Signup</button>
+                <div class="text-center mt-3">
+                    Already have an account? <a href="#" onclick="showLogin()">Login</a>
+                </div>
         </form>
     </div>
 
