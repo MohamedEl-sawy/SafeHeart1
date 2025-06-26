@@ -1,26 +1,73 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
+  <meta charset="UTF-8">
   <title>Safe Heart</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="icon" type="image/x-icon" href="./354d8dea-33d6-4f38-a13f-3127f64fece3_removalai_preview.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <style>
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in-up {
+      animation: fadeInUp 1s ease-in-out;
+    }
+
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-left-color: #4f46e5;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
   <script>
-    setTimeout(function () {
-      window.location.href = "./login.html";  
-    }, 5000);  
+    setTimeout(() => {
+      window.location.href = "./login.html";
+    }, 9000);
   </script>
 </head>
 
-<body>
-  <div class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div class="bg-white w-72 h-[35rem] rounded-3xl border-2 border-gray-200 flex flex-col items-center justify-center">
-      <!-- <i class="fas fa-heartbeat text-6xl text-gray-400 mb-6"></i> -->
-      <img src="../img/354d8dea-33d6-4f38-a13f-3127f64fece3_removalai_preview.png" alt="logoSafeHeart" class="opacity-90">
-      <!-- <p class="text-gray-400 text-3xl">Safe Heart</p> -->
-    </div>
-  </div>
-</body>
+<body class="bg-gradient-to-br from-blue-100 to-blue-300 min-h-screen flex items-center justify-center">
 
+  <div
+    class="bg-white w-80 h-[36rem] rounded-3xl shadow-2xl border border-gray-200 flex flex-col items-center justify-center gap-6 fade-in-up">
+
+    <img src="../img/354d8dea-33d6-4f38-a13f-3127f64fece3_removalai_preview.png" alt="SafeHeart Logo"
+      class="w-32 h-32 opacity-90 rounded-full shadow-md">
+
+    <h1 class="text-2xl font-semibold text-blue-700 text-center px-4">
+       Safe Heart ❤️
+    </h1>
+
+    <p class="text-gray-600 text-center px-6">
+      ...صحتك دايمًا في أمان، لا تقلق، اطمن 
+    </p>
+
+    <div class="spinner mt-4"></div>
+
+    <p class="text-xs text-gray-400 mt-auto mb-6">Redirecting to login...</p>
+  </div>
+
+</body>
 
 </html>
