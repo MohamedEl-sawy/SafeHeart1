@@ -3,330 +3,470 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Health History</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SafeHeart Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
     <style>
         body {
-            background-color: #f8f9fa;
-            font-family: 'Roboto', sans-serif;
-            color: #333;
-            line-height: 1.6;
-        }
+        font-family: 'Poppins', sans-serif;
+        background: #e6f2ff;
+        padding: 20px;
+        margin: 0;
+        padding-bottom: 120px; /* هامش لتفادي الناف بار */
+    margin: 0;
+    }
 
         h1 {
-            color: #007bff;
-            font-weight: 700;
-            margin-bottom: 30px;
-            font-size: 36px;
             text-align: center;
-        }
-
-        .section-title {
-            margin-top: 30px;
-            color: #333;
-            font-size: 28px;
-            font-weight: bold;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 8px;
+            color: #004080;
             margin-bottom: 20px;
         }
 
-        .record {
-            padding: 25px;
-            background-color: #fff;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        .controls {
+            text-align: center;
             margin-bottom: 20px;
-            transition: all 0.3s ease-in-out;
         }
 
-        .record:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .record strong {
-            color: #007bff;
-            font-size: 16px;
-        }
-
-        .btn-success {
-            background-color: #28a745;
-            border-color: #28a745;
-            font-size: 16px;
-            font-weight: 700;
-            padding: 12px 24px;
+        select,
+        button {
+            padding: 10px;
+            margin: 5px;
             border-radius: 6px;
-            transition: all 0.3s;
-        }
-
-        .btn-success:hover {
-            background-color: #218838;
-            border-color: #1e7e34;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn {
-            font-size: 16px;
-            font-weight: 700;
-            padding: 12px 24px;
-            border-radius: 6px;
-            transition: background-color 0.3s;
-        }
-
-        .btn:hover {
+            border: 1px solid #ccc;
+            font-size: 14px;
             cursor: pointer;
+        }
+
+        #aiSuggestionBtn,
+        #exportPdfBtn {
+            background-color: #0077cc;
+            color: white;
+            border: none;
+            transition: 0.3s;
+        }
+
+        #aiSuggestionBtn:hover,
+        #exportPdfBtn:hover {
+            background-color: #005fa3;
             transform: scale(1.05);
         }
 
-        .text-right {
-            margin-bottom: 30px;
-            text-align: right;
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            padding-bottom: 100px; /* Add this line */
         }
 
-        .section {
-            margin-bottom: 40px;
+        .card {
+            background: #fff;
+            border-left: 5px solid #0077cc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.6s;
         }
 
-        /* Add smooth scroll effect */
-        html {
-            scroll-behavior: smooth;
+        .prediction.Normal {
+            color: #009933;
+            font-weight: bold;
         }
 
-        .btn-info {
-            background-color: #17a2b8;
-            border-color: #17a2b8;
+        .prediction.Alert {
+            color: #cc0000;
+            font-weight: bold;
         }
 
-        .btn-info:hover {
-            background-color: #138496;
-            border-color: #117a8b;
+        .date-time {
+            font-size: 14px;
+            color: #888;
         }
 
-        /* Loading spinner */
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 50px;
+        #aiSuggestionBox {
+            background: #f4f9ff;
+            border-left: 5px solid #0077cc;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            animation: fadeIn 0.8s ease-in-out;
         }
 
-        .loading img {
-            width: 60px;
+        canvas {
+            margin: 30px 0;
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
         }
 
+        #chart3 {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+        .nav-link-custom {
+            color: #6c757d;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link-custom:hover,
+        .nav-link-custom.active {
+            color: #007bff;
+            background-color: rgba(0, 123, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .bottom-nav-container {
+            width: 100%;
+            max-width: 700px;
+            /* background-color: #ffffffcc; خلفية بيضاء شبه شفافة */
+            border-radius: 15px;
+            position: fixed;
+            /*=======================*/
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+
+            bottom: 0;
+        }
         
     </style>
 </head>
 
-<body class="container my-4">
-    <h1 class="text-center">Health History</h1>
+<body>
 
-    <div class="text-right mb-4">
-        <button class="btn btn-success" id="download-pdf">
-            <i class="fa fa-download"></i> Download PDF Report
-        </button>
+    <h1>🔍 SafeHeart – History</h1>
+
+    <div class="controls">
+        <select id="filterSelect">
+            <option value="All">All</option>
+            <option value="Normal">Normal</option>
+            <option value="Alert">Alert</option>
+        </select>
+        <button id="aiSuggestionBtn">🧠 Get AI Suggestion</button>
+        <button id="exportPdfBtn">📄 Export PDF</button>
     </div>
 
-    <!-- Loading Spinner -->
-    <div class="loading" id="loading">
-        <img src="https://i.gifer.com/7Nw5.gif" alt="Loading..." />
-    </div>
+    <div class="container" id="deviceData" style="padding-bottom: 160px;">Loading...</div>
 
-    <div id="today-section" class="section">
-        <h3 class="section-title">Today's Readings</h3>
-        <div id="today-data"></div>
-    </div>
 
-    <div id="week-section" class="section">
-        <h3 class="section-title">This Week</h3>
-        <div id="week-data"></div>
+    <div class="container" style="margin-bottom: 120px;">
+        <canvas id="vitalsChart"></canvas>
+        <canvas id="ecgTempChart"></canvas>
+        <canvas id="chart3"></canvas>
+        <div id="aiSuggestionBox"></div>
     </div>
+    
+</div> <!-- container -->
+<div style="height: 100px;"></div>
+</div>
 
-    <div id="month-section" class="section">
-        <h3 class="section-title">This Month</h3>
-        <div id="month-data"></div>
-    </div>
 
     <!-- Bottom Navigation -->
-    <div class="bottom-nav fixed-bottom bg-white shadow-lg px-3 pt-2 pb-1">
-        <div class="d-flex justify-content-between text-center">
-            <div class="nav-item flex-fill" onclick="navigateToPage('home')">
-                <i class="fas fa-home"></i>
-                <div>Home</div>
-            </div>
-            <div class="nav-item flex-fill" onclick="navigateToPage('history')">
-                <i class="fas fa-history"></i>
-                <div>History</div>
-            </div>
-            <div class="nav-item flex-fill" onclick="navigateToPage('notifications')">
-                <i class="fas fa-bell"></i>
-                <div>Alerts</div>
-            </div>
-            <div class="nav-item flex-fill" onclick="navigateToPage('Profile')">
-                <i class="fas fa-user"></i>
-                <div>Profile</div>
-            </div>
+    <div class="bottom-nav-container shadow-sm mt-4 mx-auto">
+        <div class="d-flex justify-content-around py-3">
+            <a href="homeDashboard.html" class="text-decoration-none text-center flex-fill nav-link-custom">
+                <i class="fas fa-home fa-lg d-block mb-1"></i>
+                <small>Home</small>
+            </a>
+            <a href="HealthHistory.html" class="text-decoration-none text-center flex-fill nav-link-custom">
+                <i class="fas fa-history fa-lg d-block mb-1"></i>
+                <small>History</small>
+            </a>
+            <a href="Notifications.html" class="text-decoration-none text-center flex-fill nav-link-custom">
+                <i class="fas fa-bell fa-lg d-block mb-1"></i>
+                <small>Notifications</small>
+            </a>
+            <a href="profile.html" class="text-decoration-none text-center flex-fill nav-link-custom">
+                <i class="fas fa-user fa-lg d-block mb-1"></i>
+                <small>Profile</small>
+            </a>
         </div>
     </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyCA-QB0_T3Ano-0iIy7XME-opFc6MZXzRg",
-            authDomain: "safeheart-2d878.firebaseapp.com",
-            databaseURL: "https://safeheart-2d878-default-rtdb.firebaseio.com",
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "https://safeheart-2d878-default-rtdb.firebaseio.com/",
             projectId: "safeheart-2d878",
-            storageBucket: "safeheart-2d878.appspot.com",
-            messagingSenderId: "968110391488",
-            appId: "1:968110391488:web:235a04d5b59205b1076d25"
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
-
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const deviceKey = sessionStorage.getItem("deviceKey");
+        const deviceId = "device123";
+        const predictionsRef = db.ref(`Predictions/${deviceId}`);
 
-        if (!deviceKey) {
-            alert("Please login or select a device first.");
-            window.location.href = "./login.html";
+        let latestReadings = [];
+        let chart1, chart2, chart3;
+
+        function renderCards(data, filter) {
+            const container = document.getElementById("deviceData");
+            container.innerHTML = "";
+            const entries = Object.entries(data).reverse();
+            latestReadings = [];
+
+            entries.forEach(([_, val]) => {
+                if (filter !== "All" && val.prediction !== filter) return;
+                latestReadings.push(val);
+                const card = document.createElement("div");
+                card.className = "card";
+                card.innerHTML = `
+        <div class="date-time">📅 ${val.date} ⏰ ${val.time}</div>
+        <div>❤️ HR: <strong>${val.input[0]}</strong></div>
+        <div>🫀 ECG: <strong>${val.input[1]}</strong></div>
+        <div>🧪 SpO2: <strong>${val.input[2]}%</strong></div>
+        <div>🌡 Temp: <strong>${val.input[3]}°C</strong></div>
+        <div>🔥 Obj Temp: <strong>${val.input[4]}°C</strong></div>
+        <div class="prediction ${val.prediction}">📊 Prediction: ${val.prediction}</div>
+      `;
+                container.appendChild(card);
+            });
+
+            drawCharts(latestReadings);
         }
 
-        const todayEl = document.getElementById("today-data");
-        const weekEl = document.getElementById("week-data");
-        const monthEl = document.getElementById("month-data");
-        const loadingEl = document.getElementById("loading");
+        predictionsRef.on("value", (snapshot) => {
+            const data = snapshot.val();
+            if (data) renderCards(data, document.getElementById("filterSelect").value);
+            else document.getElementById("deviceData").innerHTML = "No predictions yet.";
+        });
 
-        function formatRecord(time, data) {
-            return `
-                <div class="record">
-                    <strong>Time:</strong> ${time}<br>
-                    <strong>Heart Rate:</strong> ${data.heartRate || "--"} bpm<br>
-                    <strong>SpO2:</strong> ${data.SpO2 || "--"}%<br>
-                    <strong>Temperature:</strong> ${data.objectTemperature || "--"} °C<br>
-                    <strong>Blood Pressure:</strong> ${data.bloodPressure || "--"} mmHg
-                </div>
-            `;
-        }
+        document.getElementById("filterSelect").addEventListener("change", () => {
+            predictionsRef.once("value").then((snap) => {
+                const data = snap.val();
+                if (data) renderCards(data, document.getElementById("filterSelect").value);
+            });
+        });
 
-        function loadData() {
-            const now = new Date();
-            const todayStr = now.toISOString().slice(0, 10);
-            const currentTime = now.getTime();
+        document.getElementById("aiSuggestionBtn").addEventListener("click", () => {
+            const recent = latestReadings.slice(0, 5);
+            if (!recent.length) {
+                document.getElementById("aiSuggestionBox").innerText = "No data to analyze.";
+                return;
+            }
+            const avgHR = recent.reduce((sum, d) => sum + parseFloat(d.input[0]), 0) / recent.length;
+            const avgSpO2 = recent.reduce((sum, d) => sum + parseFloat(d.input[2]), 0) / recent.length;
+            let suggestion = "✅ All vitals are within normal range.";
+            if (avgHR > 100 || avgSpO2 < 95) {
+                suggestion = "⚠️ You should relax, stay hydrated, and consider checking your vitals again.";
+            }
+            document.getElementById("aiSuggestionBox").innerText = suggestion;
+        });
 
-            loadingEl.style.display = "block"; // Show loading spinner
+        function drawCharts(dataPoints) {
+            if (!dataPoints.length) return;
 
-            db.ref("Devices/" + deviceKey).once("value", snapshot => {
-                const data = snapshot.val();
-                if (!data) return;
+            const labels = dataPoints.map(d => `${d.date} ${d.time}`);
+            const hr = dataPoints.map(d => +d.input[0]);
+            const spo2 = dataPoints.map(d => +d.input[2]);
+            const ecg = dataPoints.map(d => +d.input[1]);
+            const temp = dataPoints.map(d => +d.input[3]);
 
-                const weekAgo = currentTime - 7 * 24 * 60 * 60 * 1000;
-                const monthAgo = currentTime - 30 * 24 * 60 * 60 * 1000;
+            const alerts = dataPoints.filter(d => d.prediction === "Alert").length;
+            const normals = dataPoints.length - alerts;
 
-                let todayRecords = [];
-                let weekRecords = [];
-                let monthRecords = [];
-
-                Object.keys(data).forEach(dateStr => {
-                    const dateObj = new Date(dateStr);
-                    const dateTime = dateObj.getTime();
-
-                    Object.keys(data[dateStr]).forEach(timeStr => {
-                        const record = data[dateStr][timeStr];
-                        const fullTimeStr = `${dateStr} ${timeStr}`;
-
-                        if (dateStr === todayStr) {
-                            todayRecords.push({ time: fullTimeStr, data: record });
-                        } else if (dateTime >= weekAgo) {
-                            weekRecords.push({ time: fullTimeStr, data: record });
-                        } else if (dateTime >= monthAgo) {
-                            monthRecords.push({ time: fullTimeStr, data: record });
-                        }
-                    });
-                });
-
-                // Keep only last reading of today
-                if (todayRecords.length > 0) {
-                    const latestToday = todayRecords[todayRecords.length - 1];
-                    todayEl.innerHTML = formatRecord(latestToday.time, latestToday.data);
+            if (chart1) chart1.destroy();
+            chart1 = new Chart(document.getElementById('vitalsChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: '❤️ Heart Rate', data: hr, borderColor: 'red', fill: false },
+                        { label: '🧪 SpO2', data: spo2, borderColor: 'blue', fill: false }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { beginAtZero: true } }
                 }
+            });
 
-                weekEl.innerHTML = weekRecords.map(r => formatRecord(r.time, r.data)).join("");
-                monthEl.innerHTML = monthRecords.map(r => formatRecord(r.time, r.data)).join("");
+            if (chart2) chart2.destroy();
+            chart2 = new Chart(document.getElementById('ecgTempChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: '🫀 ECG', data: ecg, borderColor: 'green', fill: false },
+                        { label: '🌡 Temp', data: temp, borderColor: 'orange', fill: false }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
 
-                // Save for report
-                window.allRecords = {
-                    today: todayRecords,
-                    week: weekRecords,
-                    month: monthRecords,
-                };
-
-                loadingEl.style.display = "none"; // Hide loading spinner
+            if (chart3) chart3.destroy();
+            chart3 = new Chart(document.getElementById('chart3').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['✅ Normal', '⚠ Alert'],
+                    datasets: [{
+                        data: [normals, alerts],
+                        backgroundColor: ['#009933', '#cc0000']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'bottom' } }
+                }
             });
         }
 
-        loadData();
-
-        document.getElementById("download-pdf").addEventListener("click", () => {
+        document.getElementById("exportPdfBtn").addEventListener("click", async () => {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            let y = 10;
+            const pdf = new jsPDF('p', 'pt', 'a4');
 
-            doc.setFontSize(16);
-            doc.text("Health Report", 80, y);
-            y += 10;
+            const patientRef = firebase.database().ref("pathint");
+            let patientData = null;
 
-            function addSection(title, records) {
-                doc.setFontSize(12);
-                doc.text(title, 10, y);
-                y += 8;
-                records.forEach(r => {
-                    doc.setFontSize(10);
-                    const lines = [
-                        `Time: ${r.time}`,
-                        `Heart Rate: ${r.data.heartRate || "--"} bpm`,
-                        `SpO2: ${r.data.SpO2 || "--"}%`,
-                        `Temperature: ${r.data.objectTemperature || "--"} °C`,
-                        `Blood Pressure: ${r.data.bloodPressure || "--"} mmHg`,
-                    ];
-                    lines.forEach(line => {
-                        doc.text(line, 10, y);
-                        y += 6;
-                        if (y > 280) {
-                            doc.addPage();
-                            y = 10;
-                        }
-                    });
-                    y += 4;
+            await patientRef.once("value").then(snapshot => {
+                const allPatients = snapshot.val();
+                for (const key in allPatients) {
+                    if (allPatients[key].deviceKey === deviceId) {
+                        patientData = allPatients[key];
+                        break;
+                    }
+                }
+            });
+
+            // Page 1: Patient Info
+            pdf.setFont("helvetica", "bold");
+            pdf.setFontSize(22);
+            pdf.text("SafeHeart Patient Report", 40, 50);
+            const logo = new Image();
+            logo.src = "https://raw.githubusercontent.com/MohamedEl-sawy/SafeHeart1/main/img/logo.jpeg"; 
+
+            await new Promise(resolve => {
+                logo.onload = () => {
+                    pdf.addImage(logo, 'PNG', pdf.internal.pageSize.getWidth() - 100, 20, 40, 40);
+                    resolve();
+                };
+            });
+
+            pdf.setFontSize(16);
+            pdf.text("Patient Information", 40, 90);
+            pdf.setLineWidth(0.5);
+            pdf.line(40, 95, pdf.internal.pageSize.getWidth() - 40, 95);
+            pdf.setFontSize(12);
+
+            let y = 110;
+            if (patientData) {
+                const infoItems = [
+                    { label: "Full Name", value: patientData.FullName },
+                    { label: "Date of Birth", value: patientData.dateofbirth },
+                    { label: "Email", value: patientData.mail },
+                    { label: "Preferred Doctor", value: patientData.PreferredDoctor },
+                    { label: "Medical History", value: patientData.medicalHistory },
+                    { label: "Emergency Contact", value: `${patientData.nameEmergency} - ${patientData.phoneEmergency}` },
+                    { label: "Device ID", value: patientData.deviceKey }
+                ];
+
+                infoItems.forEach(({ label, value }) => {
+                    pdf.setTextColor(0, 0, 100);
+                    pdf.text(`${label}:`, 50, y);
+                    pdf.setTextColor(0, 0, 0);
+                    pdf.text(value || "N/A", 170, y);
+                    y += 25;
                 });
-                y += 6;
+            } else {
+                pdf.setTextColor(200, 0, 0);
+                pdf.text("❌ Patient information not found.", 40, y);
+                y += 25;
             }
 
-            const records = window.allRecords;
-            addSection("Today's Data", records.today || []);
-            addSection("This Week", records.week || []);
-            addSection("This Month", records.month || []);
+            pdf.setTextColor(0, 0, 0);
+            pdf.setFontSize(12);
+            pdf.text(`Report Date: ${new Date().toLocaleDateString()}`, 50, y + 10);
 
-            doc.save("Health_Report.pdf");
+            // Page 2: Table + Chart1
+            pdf.addPage();
+            pdf.setFontSize(20);
+            pdf.text("Vitals Readings", 40, 40);
+            pdf.setFontSize(12);
+            const headers = ["Date", "Time", "HR", "ECG", "SpO2", "Temp", "ObjTemp", "Prediction"];
+            let y2 = 70;
+
+            headers.forEach((h, i) => pdf.text(h, 40 + i * 65, y2));
+            y2 += 15;
+
+            const first10 = [...latestReadings].slice(0, 10);
+            first10.forEach((d) => {
+                y2 += 20;
+                const row = [
+                    d.date, d.time, d.input[0], d.input[1],
+                    d.input[2] + "%", d.input[3] + "°C",
+                    d.input[4] + "°C", d.prediction
+                ];
+                row.forEach((val, i) => {
+                    pdf.text(String(val), 40 + i * 65, y2);
+                });
+            });
+
+            y2 += 30;
+            const canvas1 = document.getElementById("vitalsChart");
+            const img1 = canvas1.toDataURL("image/png");
+            const chart1Height = (canvas1.height * (pdf.internal.pageSize.getWidth() - 80)) / canvas1.width;
+            pdf.addImage(img1, 'PNG', 40, y2, pdf.internal.pageSize.getWidth() - 80, chart1Height);
+
+            // Page 3: Chart2 + Chart3
+            pdf.addPage();
+            const canvas2 = document.getElementById("ecgTempChart");
+            const img2 = canvas2.toDataURL("image/png");
+            const chart2Height = (canvas2.height * (pdf.internal.pageSize.getWidth() - 80)) / canvas2.width;
+            let y3 = 40;
+            pdf.addImage(img2, 'PNG', 40, y3, pdf.internal.pageSize.getWidth() - 80, chart2Height);
+
+            const canvas3 = document.getElementById("chart3");
+            const img3 = canvas3.toDataURL("image/png");
+            const chart3Width = (pdf.internal.pageSize.getWidth() - 200);
+            const chart3Height = (canvas3.height * chart3Width) / canvas3.width;
+            y3 += chart2Height + 30;
+            pdf.addImage(img3, 'PNG', (pdf.internal.pageSize.getWidth() - chart3Width) / 2, y3, chart3Width, chart3Height);
+
+            pdf.save(`Report_${patientData.FullName || 'Patient'}.pdf`);
+
         });
 
-        function navigateToPage(page) {
-                if (page === 'home') {
-                    window.location.href = 'homeDashboard.html'; // Replace with actual page link
-                } else if (page === 'history') {
-                    window.location.href = 'HealthHistory.html'; // Replace with actual page link
-                } else if (page === 'notifications') {
-                    window.location.href = 'Notifications.html'; // Replace with actual page link
-                } else if (page === 'Profile') {
-                    window.location.href = './profile.html'; // Replace with actual page link
+        window.addEventListener('DOMContentLoaded', () => {
+                const nav = document.querySelector('.bottom-nav-container');
+                const content = document.getElementById('deviceData');
+                if (nav && content) {
+                    const navHeight = nav.offsetHeight;
+                    content.style.marginBottom = `${navHeight + 20}px`;
                 }
-            }
+            });
 
     </script>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 
 </html>
