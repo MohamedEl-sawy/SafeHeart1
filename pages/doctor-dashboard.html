@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doctor Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #eef6fc;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.01);
+    }
+
+    button {
+      background: #0077cc;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 999;
+    }
+
+    #reportModal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      width: 90%;
+      max-width: 900px;
+      max-height: 90vh; /* ⬅️ ده بيخلي المودال ميطلعش برا الشاشة */
+      overflow-y: auto;  /* ⬅️ ده بيرجع السكروول */
+      border-radius: 12px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      z-index: 1000;
+      display: none;
+    }
+
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+
+    th {
+      background: #0077cc;
+      color: white;
+    }
+
+    canvas {
+      margin-top: 20px;
+      background: #f5f5f5;
+      border-radius: 10px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 15px;
+      gap: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>👨‍⚕️ Doctor Dashboard</h2>
+  <div id="patientList">Loading patients...</div>
+
+  <div id="overlay"></div>
+  <div id="reportModal">
+    <h3>📋 Report for <span id="modalPatientName"></span></h3>
+
+    <div class="modal-buttons">
+      <div>
+        <label for="pdfRange">🕒 PDF Time Range:</label>
+        <select id="pdfRange">
+          <option value="">-- Select --</option>
+          <option value="12">Last 12 Hours</option>
+          <option value="24">Last 24 Hours</option>
+          <option value="48">Last 48 Hours</option>
+        </select>
+        <button onclick="handlePDFExport()">📄 Export PDF</button>
+      </div>
+      <button onclick="closeModal()">❌ Close</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Time</th>
+          <th>HR</th>
+          <th>ECG</th>
+          <th>SpO2</th>
+          <th>Temp</th>
+        </tr>
+      </thead>
+      <tbody id="reportTableBody"></tbody>
+    </table>
+
+    <canvas id="reportChart" height="150"></canvas>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      databaseURL: "https://safeheart-2d878-default-rtdb.firebaseio.com/"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const doctorSpecialty = sessionStorage.getItem("doctorSpecialty") || "dentist";
+    const modalPatientName = document.getElementById("modalPatientName");
+    let currentPatientReadings = [];
+    let chart;
+
+    function loadPatients() {
+      db.ref("pathint").once("value").then(snapshot => {
+        const patients = snapshot.val();
+        const container = document.getElementById("patientList");
+        container.innerHTML = "";
+        for (let id in patients) {
+          const p = patients[id];
+          if (p.PreferredDoctor === doctorSpecialty) {
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML = `
+              <h3>${p.FullName}</h3>
+              <p><strong>Email:</strong> ${p.mail}</p>
+              <p><strong>Phone:</strong> ${p.phoneEmergency}</p>
+              <p><strong>Medical History:</strong> ${p.medicalHistory}</p>
+              <button onclick="viewPatientReport('${p.deviceKey}', '${p.FullName}')">📊 View Report</button>
+            `;
+            container.appendChild(card);
+          }
+        }
+      });
+    }
+
+    function viewPatientReport(deviceKey, fullName) {
+      modalPatientName.innerText = fullName;
+      document.getElementById("overlay").style.display = "block";
+      document.getElementById("reportModal").style.display = "block";
+
+      db.ref(`Predictions/${deviceKey}`).once("value").then(snapshot => {
+        const allData = Object.values(snapshot.val() || {}).reverse();
+        currentPatientReadings = allData; // store full list for export later
+        const latest20 = allData.slice(0, 20);
+
+        const tbody = document.getElementById("reportTableBody");
+        tbody.innerHTML = "";
+        latest20.forEach(d => {
+          const row = `
+            <tr>
+              <td>${d.date}</td>
+              <td>${d.time}</td>
+              <td>${d.input[0]}</td>
+              <td>${d.input[1]}</td>
+              <td>${d.input[2]}%</td>
+              <td>${d.input[3]}°C</td>
+            </tr>`;
+          tbody.innerHTML += row;
+        });
+
+        const labels = latest20.map(d => d.time);
+        const hr = latest20.map(d => +d.input[0]);
+        const spo2 = latest20.map(d => +d.input[2]);
+
+        if (chart) chart.destroy();
+        const ctx = document.getElementById("reportChart").getContext("2d");
+        chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [
+              { label: "Heart Rate", data: hr, borderColor: "red", fill: false },
+              { label: "SpO2", data: spo2, borderColor: "blue", fill: false }
+            ]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { position: "bottom" } }
+          }
+        });
+      });
+    }
+
+    function closeModal() {
+      document.getElementById("reportModal").style.display = "none";
+      document.getElementById("overlay").style.display = "none";
+      if (chart) chart.destroy();
+    }
+
+    async function handlePDFExport() {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF("p", "pt", "a4");
+
+      const range = +document.getElementById("pdfRange").value;
+      if (!range) {
+        alert("❌ Please select a valid time range for the PDF (12/24/48 hours).");
+        return;
+      }
+
+      const now = new Date();
+      const filtered = currentPatientReadings.filter(d => {
+        const t = new Date(`${d.date} ${d.time}`);
+        return now - t <= range * 60 * 60 * 1000;
+      });
+
+      // Page 1
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(20);
+      pdf.text(`SafeHeart Report – ${modalPatientName.textContent}`, 40, 50);
+      pdf.setFontSize(12);
+      pdf.text(`Range: Last ${range} Hours`, 40, 70);
+      pdf.text(`  Generated: ${now.toLocaleString()}`, 40, 85);
+
+      // Table
+      const headers = ["Date", "Time", "HR", "ECG", "SpO2", "Temp"];
+      let y = 110;
+      headers.forEach((h, i) => pdf.text(h, 40 + i * 70, y));
+      y += 15;
+
+      filtered.slice(0, 20).forEach(d => {
+        const row = [d.date, d.time, d.input[0], d.input[1], d.input[2] + "%", d.input[3] + "°C"];
+        row.forEach((val, i) => {
+          pdf.text(String(val), 40 + i * 70, y);
+        });
+        y += 20;
+        if (y > 700) {
+          pdf.addPage();
+          y = 50;
+        }
+      });
+
+      // Signature
+      pdf.addPage();
+      pdf.setFontSize(16);
+      pdf.text("Doctor Signature:", 50, 100);
+      pdf.line(180, 95, 400, 95);
+
+      pdf.save(`SafeHeart_Report_${modalPatientName.textContent}.pdf`);
+    }
+
+    window.onload = loadPatients;
+  </script>
+
+</body>
+
+</html>
