@@ -7,91 +7,161 @@
     <title>User Profile</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(to right, #00c6ff, #0072ff);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 30px;
-            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to right, #a1c4fd, #c2e9fb);
+            color: #333;
             margin: 0;
+            padding: 20px;
         }
 
         .profile-container {
-            background-color: rgba(255, 255, 255, 0.1);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-            width: 100%;
             max-width: 600px;
+            margin: auto;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            padding: 30px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         h1 {
             text-align: center;
+            margin-bottom: 30px;
+            color: #0072ff;
+        }
+
+        .profile-image {
+            text-align: center;
             margin-bottom: 20px;
         }
 
+        .profile-image img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
         .data-item {
-            margin: 10px 0;
-            font-size: 18px;
-            word-wrap: break-word;
+            background: #f1f8ff;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 114, 255, 0.1);
+        }
+
+        .data-item i {
+            color: #0072ff;
+            margin-right: 12px;
+            font-size: 20px;
+            width: 30px;
         }
 
         .label {
             font-weight: bold;
+            margin-right: 5px;
         }
 
         .buttons {
-            margin-top: 20px;
             display: flex;
             justify-content: space-between;
+            margin-top: 30px;
         }
 
         .buttons button {
-            padding: 10px 15px;
+            flex: 1;
+            margin: 5px;
+            padding: 12px 20px;
             border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            background-color: #fff;
-            color: #0072ff;
+            border-radius: 10px;
             font-weight: bold;
-            transition: background-color 0.3s;
+            font-size: 16px;
+            transition: 0.3s ease;
         }
 
-        .buttons button:hover {
-            background-color: #e0e0e0;
+        .logout-btn {
+            background-color: #0072ff;
+            color: white;
+        }
+
+        .logout-btn:hover {
+            background-color: #005dd1;
+        }
+
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background-color: #d32f2f;
         }
     </style>
 </head>
 
 <body>
     <div class="profile-container">
-        <h1>Welcome, <span id="user-name">...</span></h1>
-        <div class="data-item"><span class="label">Email:</span> <span id="user-email"></span></div>
-        <div class="data-item"><span class="label">Date of Birth:</span> <span id="user-dob"></span></div>
-        <div class="data-item"><span class="label">Gender:</span> <span id="user-gender"></span></div>
-        <div class="data-item"><span class="label">Phone Number:</span> <span id="user-phone"></span></div>
-        <div class="data-item"><span class="label">Address:</span> <span id="user-address"></span></div>
-        <div class="data-item"><span class="label">Medical History:</span> <span id="user-medical-history"></span></div>
-        <div class="data-item"><span class="label">Preferred Doctor:</span> <span id="user-doctor"></span></div>
-        <div class="data-item"><span class="label">Patient Status:</span> <span id="user-isPatient"></span></div>
-        <div class="data-item" id="illnessDiv" style="display:none;"><span class="label">Illness:</span> <span
-                id="user-illness"></span></div>
-        <div class="data-item"><span class="label">Emergency Contact Name:</span> <span id="user-emergency-name"></span>
-        </div>
-        <div class="data-item"><span class="label">Emergency Contact Phone:</span> <span
-                id="user-emergency-phone"></span></div>
-        <div class="data-item"><span class="label">Device Key:</span> <span id="user-deviceKey"></span></div>
 
+        <!-- صورة المستخدم -->
+        <div class="profile-image">
+            <img id="profile-img" src="https://via.placeholder.com/120" alt="User Image">
+        </div>
+
+        <!-- الاسم -->
+        <h1>Welcome, <span id="user-name">...</span></h1>
+
+        <!-- بيانات المستخدم -->
+        <div class="data-item"><i class="fas fa-envelope"></i><span class="label">Email:</span> <span
+                id="user-email"></span></div>
+        <div class="data-item"><i class="fas fa-calendar-alt"></i><span class="label">Date of Birth:</span> <span
+                id="user-dob"></span></div>
+        <div class="data-item"><i class="fas fa-venus-mars"></i><span class="label">Gender:</span> <span
+                id="user-gender"></span></div>
+        <div class="data-item"><i class="fas fa-phone"></i><span class="label">Phone Number:</span> <span
+                id="user-phone"></span></div>
+        <div class="data-item"><i class="fas fa-map-marker-alt"></i><span class="label">Address:</span> <span
+                id="user-address"></span></div>
+        <div class="data-item"><i class="fas fa-notes-medical"></i><span class="label">Medical History:</span> <span
+                id="user-medical-history"></span></div>
+        <div class="data-item"><i class="fas fa-user-md"></i><span class="label">Preferred Doctor:</span> <span
+                id="user-doctor"></span></div>
+        <div class="data-item"><i class="fas fa-user-check"></i><span class="label">Patient Status:</span> <span
+                id="user-isPatient"></span></div>
+        <div class="data-item" id="illnessDiv" style="display:none;"><i class="fas fa-procedures"></i><span
+                class="label">Illness:</span> <span id="user-illness"></span></div>
+        <div class="data-item"><i class="fas fa-user-shield"></i><span class="label">Emergency Contact:</span> <span
+                id="user-emergency-name"></span></div>
+        <div class="data-item"><i class="fas fa-phone-alt"></i><span class="label">Emergency Phone:</span> <span
+                id="user-emergency-phone"></span></div>
+        <div class="data-item"><i class="fas fa-key"></i><span class="label">Device Key:</span> <span
+                id="user-deviceKey"></span></div>
+
+        <!-- الأزرار -->
         <div class="buttons">
-            <button onclick="logout()">Log Out</button>
-            <button onclick="deleteAccount()">Delete Account</button>
+            <button class="logout-btn" onclick="logout()">Log Out</button>
+            <button class="delete-btn" onclick="deleteAccount()">Delete Account</button>
         </div>
     </div>
 
+    <!-- Firebase script -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCA-QB0_T3Ano-0iIy7XME-opFc6MZXzRg",
@@ -100,47 +170,52 @@
             projectId: "safeheart-2d878",
             storageBucket: "safeheart-2d878.appspot.com",
             messagingSenderId: "968110391488",
-            appId: "1:968110391488 web:235a04d5b59205b1076d25"
+            appId: "1:968110391488:web:235a04d5b59205b1076d25"
         };
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-
         const userId = sessionStorage.getItem("loggedInUser Id");
 
-            if (!userId) {
-                alert("Please login first.");
-                window.location.href = "./login.html";
-            } else {
-                const userRef = db.ref("pathint/" + userId);
-                userRef.once("value").then(snapshot => {
-                    const data = snapshot.val();
-                    if (data) {
-                        document.getElementById("user-name").textContent = data.FullName || "N/A";
-                        document.getElementById("user-email").textContent = data.mail || "N/A";
-                        document.getElementById("user-dob").textContent = data.dateofbirth || "N/A";
-                        document.getElementById("user-gender").textContent = data.gender || "N/A";
-                        document.getElementById("user-phone").textContent = data.phone || "N/A";
-                        document.getElementById("user-address").textContent = data.address || "N/A";
-                        document.getElementById("user-medical-history").textContent = data.medicalHistory || "N/A";
-                        document.getElementById("user-doctor").textContent = data.PreferredDoctor || "N/A";
-                        document.getElementById("user-isPatient").textContent = data.isPatient || "N/A";
-                        if (data.isPatient === "yes" && data.illness) {
-                            document.getElementById("illnessDiv").style.display = "block";
-                            document.getElementById("user-illness").textContent = data.illness;
-                        }
-                        document.getElementById("user-emergency-name").textContent = data.nameEmergency || "N/A";
-                        document.getElementById("user-emergency-phone").textContent = data.phoneEmergency || "N/A";
-                        document.getElementById("user-deviceKey").textContent = data.deviceKey || "N/A";
-                    } else {
-                        alert("User  data not found.");
-                        window.location.href = "./login.html";
+        if (!userId) {
+            alert("Please log in first.");
+            window.location.href = "login.html";
+        } else {
+            const userRef = db.ref("pathint/" + userId);
+            userRef.once("value").then(snapshot => {
+                const data = snapshot.val();
+                if (data) {
+                    document.getElementById("user-name").textContent = data.FullName || "N/A";
+                    document.getElementById("user-email").textContent = data.mail || "N/A";
+                    document.getElementById("user-dob").textContent = data.dateofbirth || "N/A";
+                    document.getElementById("user-gender").textContent = data.gender || "N/A";
+                    document.getElementById("user-phone").textContent = data.phone || "N/A";
+                    document.getElementById("user-address").textContent = data.address || "N/A";
+                    document.getElementById("user-medical-history").textContent = data.medicalHistory || "N/A";
+                    document.getElementById("user-doctor").textContent = data.PreferredDoctor || "N/A";
+                    document.getElementById("user-isPatient").textContent = data.isPatient || "N/A";
+                    if (data.isPatient === "yes" && data.illness) {
+                        document.getElementById("illnessDiv").style.display = "flex";
+                        document.getElementById("user-illness").textContent = data.illness;
                     }
-                }).catch(error => {
-                    alert("Error fetching user data: " + error.message);
+                    document.getElementById("user-emergency-name").textContent = data.nameEmergency || "N/A";
+                    document.getElementById("user-emergency-phone").textContent = data.phoneEmergency || "N/A";
+                    document.getElementById("user-deviceKey").textContent = data.deviceKey || "N/A";
+
+                    // عرض صورة المستخدم إذا كانت موجودة
+                    if (data.profilePicture) {
+                        document.getElementById("profile-img").src = data.profilePicture;
+                    }
+                } else {
+                    alert("User data not found.");
                     window.location.href = "./login.html";
-                });
-            }
+                }
+            }).catch(error => {
+                alert("Error fetching user data: " + error.message);
+                window.location.href = "./login.html";
+            });
+        }
+
         function logout() {
             sessionStorage.removeItem("loggedInUser Id");
             window.location.href = "./login.html";
