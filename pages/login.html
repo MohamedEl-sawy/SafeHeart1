@@ -4,332 +4,83 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
-    <link rel="stylesheet" href="../css/bootstrap-5.3.3-dist/css/bootstrap.min.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <title>SafeHeart Login</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
     <style>
         body {
-            background-color: #e0f7fa;
+            font-family: 'Poppins', sans-serif;
+            background: #e6f2ff ;
+            padding: 20px;
+            /* background-color: #e0f7fa; */
             display: flex;
             align-items: center;
             justify-content: center;
+            min-height: 100vh;
         }
 
         .form-container {
             width: 100%;
-            max-width: 500px;
-            padding: 20px;
+            max-width: 550px;
             background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
         }
 
         .logo {
             width: 100px;
-            height: auto;
-        }
-
-        .fade-in {
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+            margin-bottom: 15px;
         }
 
         .hidden {
             display: none;
         }
-
-        .required:after {
-            content: " *";
-            color: red;
-        }
-
-        .error-message {
-            color: red;
-            font-size: 0.875em;
-        }
     </style>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCA-QB0_T3Ano-0iIy7XME-opFc6MZXzRg",
-            authDomain: "safeheart-2d878.firebaseapp.com",
-            databaseURL: "https://safeheart-2d878-default-rtdb.firebaseio.com",
-            projectId: "safeheart-2d878",
-            storageBucket: "safeheart-2d878.appspot.com",
-            messagingSenderId: "968110391488",
-            appId: "1:968110391488:web:235a04d5b59205b1076d25"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const storage = firebase.storage();
-        const storageRef = storage.ref();
-
-        function showSignup() {
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('signupForm').classList.remove('hidden');
-        }
-
-        function showLogin() {
-            document.getElementById('signupForm').classList.add('hidden');
-            document.getElementById('loginForm').classList.remove('hidden');
-        }
-
-        function togglePasswordVisibility(inputId, iconId) {
-            const input = document.getElementById(inputId);
-            const icon = document.getElementById(iconId);
-            if (input.type === "password") {
-                input.type = "text";
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = "password";
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        }
-
-        function validateEmail(email) {
-            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return emailPattern.test(email);
-        }
-
-        function validatePhone(phone) {
-            const phonePattern = /^\+?[0-9]{10,15}$/;
-            return phonePattern.test(phone);
-        }
-
-        function validatePassword(password) {
-            const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-            return passwordPattern.test(password);
-        }
-
-        function validateFullName(name) {
-            const namePattern = /^[A-Za-z]+\s[A-Za-z]+$/;
-            return namePattern.test(name);
-        }
-
-        function checkPasswordMatch() {
-            const password = document.getElementById("newPassword").value;
-            const confirmPassword = document.getElementById("confirmPassword").value;
-            const messageElement = document.getElementById(" passwordMatchMessage");
-
-            if (password !== confirmPassword) {
-                messageElement.innerText = "Passwords do not match.";
-                messageElement.classList.remove('hidden');
-            } else {
-                messageElement.innerText = "";
-                messageElement.classList.add('hidden');
-            }
-        }
-
-        function validateFile() {
-            const fileInput = document.getElementById('medicalHistory');
-            const fileMessage = document.getElementById('fileMessage');
-            const file = fileInput.files[0];
-
-            if (file) {
-                const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
-                if (!allowedTypes.includes(file.type)) {
-                    fileMessage.textContent = 'Please upload a valid file (PDF, DOC, DOCX, TXT).';
-                    fileMessage.classList.remove('hidden');
-                    return false;
-                }
-                fileMessage.classList.add('hidden');
-                return true;
-            } else {
-                fileMessage.textContent = 'Please select a file.';
-                fileMessage.classList.remove('hidden');
-                return false;
-            }
-        }
-
-        async function uploadFile(file) {
-            const fileRef = storageRef.child('medicalHistory/' + file.name);
-            try {
-                await fileRef.put(file);
-                const downloadURL = await fileRef.getDownloadURL();
-                return downloadURL;
-            } catch (error) {
-                console.error('Error uploading file:', error);
-                return null;
-            }
-        }
-
-        async function sendddata(event) {
-                event.preventDefault();
-
-                var name = document.getElementById("fullName").value;
-                var datebirth = document.getElementById("dob").value;
-                var gender = document.getElementById("gender").value;
-                var phone = document.getElementById("phone").value;
-                var mail = document.getElementById("signupEmail").value;
-                var password = document.getElementById("newPassword").value;
-                var address = document.getElementById("address").value;
-                var medicalHistory = document.getElementById("history").value;
-                var PreferredDoctor = document.getElementById("doctorType").value;
-                var nameEmergency = document.getElementById("emergencyName").value;
-                var phoneEmergency = document.getElementById("emergencyPhone").value;
-                var deviceKey = document.getElementById("deviceKey").value;
-
-                var pathint = {
-                    FullName: name,
-                    dateofbirth: datebirth,
-                    gender: gender,
-                    phone: phone,
-                    mail: mail,
-                    password: password,
-                    address: address,
-                    medicalHistory: medicalHistory,
-                    PreferredDoctor: PreferredDoctor,
-                    nameEmergency: nameEmergency,
-                    phoneEmergency: phoneEmergency,
-                    deviceKey: deviceKey
-                };
-
-                console.log("Sending Data:", pathint);
-
-                try {
-                    var res = await fetch("https://safeheart-2d878-default-rtdb.firebaseio.com//pathint.json", {
-                        method: "POST",
-                        headers: { 'Content-type': 'application/json' },
-                        body: JSON.stringify(pathint)
-                    });
-                    var res2 = await res.json();
-                    console.log("Response from Firebase:", res2);
-
-                    clear(); // Make sure you define this function to reset form inputs if needed
-
-                } catch (error) {
-                    console.error("Error occurred:", error);
-                }
-            }
-
-        async function login(event) {
-            event.preventDefault();
-            const email = document.getElementById("emaillogin").value.trim();
-            const password = document.getElementById("passwordlogin").value.trim();
-            const msg = document.getElementById('message');
-            msg.textContent = '';
-
-            if (!validateEmail(email)) {
-                document.getElementById("loginEmailMessage").innerText = "Invalid email address.";
-                return;
-            }
-            if (!validatePassword(password)) {
-                document.getElementById("loginPasswordMessage").innerText = "Password must be at least 8 characters long, with at least one letter and one number.";
-                return;
-            }
-
-            db.ref('pathint').once('value')
-                .then(snapshot => {
-                    let found = false;
-
-                    snapshot.forEach(childSnapshot => {
-                        const user = childSnapshot.val();
-                        const userId = childSnapshot.key;
-
-                        if (user.mail === email && user.password === password) {
-                            found = true;
-                            sessionStorage.setItem('loggedInUser Id', userId);
-                            sessionStorage.setItem('deviceKey', user.deviceKey);
-                            window.location.href = "./homeDashboard.html?deviceKey=" + user.deviceKey;
-                        }
-                    });
-
-                    if (!found) {
-                        msg.textContent = "Invalid email or password.";
-                    }
-                })
-                .catch(error => {
-                    msg.textContent = "Error: " + error.message;
-                });
-        }
-
-        const userId = sessionStorage.getItem("loggedInUser  Id");
-
-        if (!userId) {
-            const userRef = db.ref("pathint/" + userId);
-            userRef.once("value").then(snapshot => {
-                const data = snapshot.val();
-                if (data) {
-                    document.getElementById("user-name").textContent = data.FullName || "N/A";
-                    document.getElementById("user-email").textContent = data.mail || "N/A";
-                    document.getElementById("user-dob").textContent = data.dateofbirth || "N/A";
-                    document.getElementById("user-doctor").textContent = data.PreferredDoctor || "N/A";
-                    document.getElementById("user-medical-history").textContent = data.medicalHistory || "N/A";
-                    document.getElementById("user-emergency-name").textContent = data.nameEmergency || "N/A";
-                    document.getElementById("user-emergency-phone").textContent = data.phoneEmergency || "N/A";
-                } else {
-                    alert("No data found for this user.");
-                }
-            }).catch(error => {
-                console.error("Error fetching user data: ", error);
-            });
-        } else {
-            alert("User  not logged in.");
-            window.location.href = "./login.html";
-        }
-
-        function clear() {
-                document.getElementById("signupForm").reset();
-            }
-
-        function toggleIllnessInput() {
-            const isPatient = document.getElementById("isPatient").value;
-            const illnessContainer = document.getElementById("illnessContainer");
-            if (isPatient === "yes") {
-                illnessContainer.classList.remove('hidden');
-            } else {
-                illnessContainer.classList.add('hidden');
-            }
-        }
-    </script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 </head>
 
 <body>
-    <div class="form-container fade-in">
-        <div class="text-center mb-4">
-            <img class="logo" src="../img/354d8dea-33d6-4f38-a13f-3127f64fece3_removalai_preview.png" alt="Logo" />
+    <div class="form-container">
+        <div class="text-center">
+            <img src="../img/354d8dea-33d6-4f38-a13f-3127f64fece3_removalai_preview.png" class="logo"
+                alt="SafeHeart Logo">
+            <h4 class="text-primary mb-3">SafeHeart Login</h4>
         </div>
 
+        <!-- Login Form -->
         <form id="loginForm" onsubmit="login(event)">
             <div class="mb-3">
-                <label for="emaillogin" class="form-label required">Email Address</label>
-                <input type="email" class="form-control" id="emaillogin" required placeholder="Username@gmail.com" />
-                <p id="loginEmailMessage" class="error-message hidden"></p>
+                <label class="form-label">Email address</label>
+                <input type="email" class="form-control" id="email" required>
             </div>
             <div class="mb-3">
-                <label for="passwordlogin" class="form-label required">Password</label>
+                <label class="form-label">Password</label>
                 <div class="input-group">
-                    <input type="password" class="form-control" id="passwordlogin" required placeholder="********" />
-                    <span class="input-group-text" id="togglePassword"
-                        onclick="togglePasswordVisibility('passwordlogin', 'togglePassword')">
-                        <i class="fas fa-eye"></i>
-                    </span>
+                    <input type="password" class="form-control" id="password" required>
+                    <span class="input-group-text" onclick="togglePassword(this)"><i class="fas fa-eye"></i></span>
                 </div>
-                <p id="loginPasswordMessage" class="error-message hidden"></p>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Login As</label>
+                <select class="form-select" id="userType" required>
+                    <option value="" disabled selected>Select User Type</option>
+                    <option value="doctor">Doctor</option>
+                    <option value="patient">Patient</option>
+                </select>
             </div>
             <button type="submit" class="btn btn-primary w-100">Login</button>
-            <p id="message" class="text-danger mt-2"></p>
-            <div class="d-flex justify-content-between mt-3">
-                <a href="#" onclick="showSignup()">Signup</a>
-                <a href="#">Forgot Password?</a>
+            <p class="text-danger mt-2" id="message"></p>
+            <div class="text-center mt-3">
+                <a href="#" onclick="showSignup()">Create new account</a>
             </div>
         </form>
 
+        <!-- Signup Form -->
         <form id="signupForm" class="hidden" onsubmit="sendddata(event)">
+            <!-- Full signup form copied from your previous version -->
             <div class="mb-3">
                 <label for="fullName" class="form-label required">Full Name</label>
                 <input type="text" class="form-control" id="fullName" required placeholder="John Doe" />
@@ -361,7 +112,7 @@
             <div class="mb-3">
                 <label for="newPassword" class="form-label required">Password</label>
                 <div class="input-group">
-                    <input type="password" class="form-control" id="newPassword" required placeholder="********"
+                    <input type="password" class="form-control" id="newPassword" required placeholder=""
                         oninput="checkPasswordMatch()" />
                     <span class="input-group-text" id="toggleNewPassword"
                         onclick="togglePasswordVisibility('newPassword', 'toggleNewPassword')">
@@ -373,7 +124,7 @@
             <div class="mb-3">
                 <label for="confirmPassword" class="form-label required">Confirm Password</label>
                 <div class="input-group">
-                    <input type="password" class="form-control" id="confirmPassword" required placeholder="********"
+                    <input type="password" class="form-control" id="confirmPassword" required placeholder=""
                         oninput="checkPasswordMatch()" />
                     <span class="input-group-text" id="toggleConfirmPassword"
                         onclick="togglePasswordVisibility('confirmPassword', 'toggleConfirmPassword')">
@@ -432,16 +183,136 @@
                     <label for="emergencyPhone" class="form-label required">Phone Number</label>
                     <input type="tel" class="form-control" id="emergencyPhone" required placeholder="Emergency Phone" />
                 </div>
-                <button type="submit" class="btn btn-primary w-100" onclick="sendddata(event)" >Signup</button>
+                <button type="submit" class="btn btn-primary w-100">Signup</button>
+
+                <!-- You can paste the same form fields here from your original working patient signup -->
                 <div class="text-center mt-3">
                     Already have an account? <a href="#" onclick="showLogin()">Login</a>
                 </div>
         </form>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="../css/bootstrap-5.3.3-dist/js/bootstrap.min.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCA-QB0_T3Ano-0iIy7XME-opFc6MZXzRg",
+            authDomain: "safeheart-2d878.firebaseapp.com",
+            databaseURL: "https://safeheart-2d878-default-rtdb.firebaseio.com",
+            projectId: "safeheart-2d878",
+            storageBucket: "safeheart-2d878.appspot.com",
+            messagingSenderId: "968110391488",
+            appId: "1:968110391488:web:235a04d5b59205b1076d25"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function togglePassword(el) {
+            const input = el.previousElementSibling;
+            const icon = el.querySelector('i');
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = "password";
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        function showSignup() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('signupForm').classList.remove('hidden');
+        }
+
+        function showLogin() {
+            document.getElementById('signupForm').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+        }
+
+        async function login(event) {
+            event.preventDefault();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const userType = document.getElementById("userType").value;
+            const message = document.getElementById("message");
+            message.textContent = "";
+
+            if (!email || !password || !userType) {
+                message.textContent = "Please fill all fields and select user type.";
+                return;
+            }
+
+            if (userType === "doctor") {
+                const doctorsSnapshot = await db.ref("doctors").once("value");
+                let found = false;
+                doctorsSnapshot.forEach(child => {
+                    const doc = child.val();
+                    if (doc.email === email && doc.password === password) {
+                        found = true;
+                        sessionStorage.setItem("doctorId", child.key);
+                        sessionStorage.setItem("doctorName", doc.name);
+                        sessionStorage.setItem("doctorEmail", doc.email);
+                        sessionStorage.setItem("doctorSpecialty", doc.specialization);
+                        window.location.href = "doctor-dashboard.html";
+                    }
+                });
+                if (!found) message.textContent = "Invalid doctor credentials.";
+
+            } else if (userType === "patient") {
+                const patientsSnapshot = await db.ref("pathint").once("value");
+                let found = false;
+                patientsSnapshot.forEach(child => {
+                    const user = child.val();
+                    if (user.mail === email && user.password === password) {
+                        found = true;
+                        sessionStorage.setItem("loggedInUser Id", child.key);
+                        sessionStorage.setItem("deviceKey", user.deviceKey);
+                        sessionStorage.setItem("FullName", user.FullName);
+                        window.location.href = "homeDashboard.html?deviceKey=" + user.deviceKey;
+                    }
+                });
+                if (!found) message.textContent = "Invalid patient credentials.";
+            }
+        }
+
+        async function sendddata(event) {
+            event.preventDefault();
+
+            const name = document.getElementById("fullName").value;
+            const mail = document.getElementById("signupEmail").value;
+            const password = document.getElementById("newPassword").value;
+            const deviceKey = document.getElementById("deviceKey").value;
+            const doctorType = document.getElementById("doctorType").value;
+            const medicalHistory = document.getElementById("history").value;
+            const phoneEmergency = document.getElementById("emergencyPhone").value;
+            const nameEmergency = document.getElementById("emergencyName").value;
+
+            const patient = {
+                FullName: name,
+                mail,
+                password,
+                deviceKey,
+                PreferredDoctor: doctorType,
+                medicalHistory,
+                phoneEmergency,
+                nameEmergency,
+                // باقي الحقول...
+            };
+
+            try {
+                await fetch("https://safeheart-2d878-default-rtdb.firebaseio.com/pathint.json", {
+                    method: "POST",
+                    body: JSON.stringify(patient),
+                    headers: { "Content-Type": "application/json" }
+                });
+                alert("Signup successful!");
+                showLogin();
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Signup failed!");
+            }
+        }
+
+    </script>
 </body>
 
 </html>
