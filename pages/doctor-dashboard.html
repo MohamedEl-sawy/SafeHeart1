@@ -151,9 +151,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    if (sessionStorage.getItem("role") !== "doctor") {
-      window.location.replace("login.html");
-    }
+    
 
     const doctorSpecialty = sessionStorage.getItem("doctorSpecialty");
     const modalPatientName = document.getElementById("modalPatientName");
