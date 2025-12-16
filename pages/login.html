@@ -267,7 +267,9 @@
                         sessionStorage.setItem("loggedInUser Id", child.key);
                         sessionStorage.setItem("deviceKey", user.deviceKey);
                         sessionStorage.setItem("FullName", user.FullName);
-                        window.location.href = "homeDashboard.html?deviceKey=" + user.deviceKey;
+                        window.location.replace(
+                            "homeDashboard.html?deviceKey=" + encodeURIComponent(user.deviceKey)
+                        );
                     }
                 });
                 if (!found) message.textContent = "Invalid patient credentials.";
@@ -316,3 +318,4 @@
 </body>
 
 </html>
+
