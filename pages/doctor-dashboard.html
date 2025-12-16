@@ -151,7 +151,11 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const doctorSpecialty = sessionStorage.getItem("doctorSpecialty") || "dentist";
+    if (sessionStorage.getItem("role") !== "doctor") {
+      window.location.replace("login.html");
+    }
+
+    const doctorSpecialty = sessionStorage.getItem("doctorSpecialty");
     const modalPatientName = document.getElementById("modalPatientName");
     let currentPatientReadings = [];
     let chart;
@@ -288,5 +292,6 @@
   </script>
 
 </body>
+
 
 </html>
