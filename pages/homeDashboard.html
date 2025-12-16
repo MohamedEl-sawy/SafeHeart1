@@ -2,326 +2,237 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SafeHeart Doctor Dashboard</title>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Home Dashboard</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
 
-  <!-- Chart.js & jsPDF -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Firebase v8 SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
   <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: #eef6fc;
-      padding: 20px;
+    .nav-link {
+      font-size: 1.1rem;
+      font-weight: 500;
     }
 
-    h2 {
-      text-align: center;
-      color: #004080;
-    }
-
-    .card {
-      background: white;
-      padding: 20px;
-      margin: 15px 0;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    button {
-      background: #0077cc;
-      color: #fff;
-      padding: 8px 12px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    #overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: none;
-      z-index: 1000;
-    }
-
-    #reportModal {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #fff;
-      padding: 20px;
-      max-width: 90%;
-      max-height: 90vh;
-      overflow-y: auto;
-      border-radius: 10px;
-      display: none;
-      z-index: 1001;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 6px 10px;
-      text-align: center;
-    }
-
-    th {
-      background: #0077cc;
-      color: #fff;
-    }
-
-    canvas {
-      margin: 20px 0;
-      background: #fff;
-      border-radius: 8px;
-      padding: 10px;
+    .nav-link .fas {
+      margin-right: 0.5rem;
     }
   </style>
 </head>
 
-<body>
+<body class="bg-light d-flex align-items-center justify-content-center min-vh-100">
+  <div class="container-fluid">
+    <div class="row min-vh-100">
+      <div class="col-12 col-md-6 mx-auto my-auto">
+        <div class="bg-white p-4 rounded-lg shadow-lg">
+          <h1 class="h4 font-weight-bold text-primary text-center">Home Dashboard</h1>
+          <div class="row mb-4">
+            <div class="col-6 mb-4">
+              <div class="border rounded-lg p-4 d-flex flex-column align-items-center bg-primary-light">
+                <h2 class="h6 font-weight-semibold mb-3 text-primary">
+                  <i class="fas fa-heartbeat"></i> Heart Rate
+                </h2>
+                <div class="h5 font-weight-medium text-primary" id="heart-rate">-- bpm</div>
+              </div>
+            </div>
+            <div class="col-6 mb-4">
+              <div class="border rounded-lg p-4 d-flex flex-column align-items-center bg-success-light">
+                <h2 class="h6 font-weight-semibold mb-3 text-success">
+                  <i class="fas fa-lungs"></i> SpO<sub>2</sub>
+                </h2>
+                <div class="h5 font-weight-medium text-success" id="spo2">--%</div>
+              </div>
+            </div>
+            <div class="col-6 mb-4">
+              <div class="border rounded-lg p-4 d-flex flex-column align-items-center bg-warning-light">
+                <h2 class="h6 font-weight-semibold mb-3 text-warning">
+                  <i class="fas fa-thermometer-half"></i> Temperature
+                </h2>
+                <div class="h5 font-weight-medium text-warning" id="temperature">--°C</div>
+              </div>
+            </div>
+            <div class="col-6 mb-4">
+              <div class="border rounded-lg p-4 d-flex flex-column align-items-center bg-danger-light">
+                <h2 class="h6 font-weight-semibold mb-3 text-danger">
+                  <i class="fas fa-tachometer-alt"></i> Blood Pressure
+                </h2>
+                <div class="h5 font-weight-medium text-danger" id="blood-pressure">-- mmHg</div>
+              </div>
+            </div>
+          </div>
+          <div class="border rounded-lg p-4 d-flex flex-column align-items-center bg-info-light">
+            <h2 class="h6 font-weight-semibold mb-3 text-info">
+              <i class="fas fa-exclamation-triangle"></i> Prediction
+            </h2>
+            <div class="h5 font-weight-medium text-info" id="prediction">--</div>
+          </div>
 
-  <h2>👨‍⚕️ SafeHeart – Doctor Dashboard</h2>
-  <div id="patientList">Loading patients...</div>
+          <button id="emergency-btn" class="btn btn-danger btn-block mb-4 font-weight-semibold">EMERGENCY</button>
 
-  <div id="overlay"></div>
-  <div id="reportModal">
-    <h3>📋 Report for <span id="modalPatientName"></span></h3>
-    <button onclick="exportDoctorPDF()">📄 Export PDF</button>
-    <button onclick="closeModal()">❌ Close</button>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Time</th>
-          <th>HR</th>
-          <th>ECG</th>
-          <th>SpO2</th>
-          <th>Temp</th>
-          <th>Prediction</th>
-        </tr>
-      </thead>
-      <tbody id="reportTableBody"></tbody>
-    </table>
-
-    <canvas id="vitalsChart" height="200"></canvas>
-    <canvas id="ecgTempChart" height="200"></canvas>
-    <canvas id="chart3" height="200"></canvas>
+          <div class="d-flex justify-content-between mb-4">
+            <span class="h6 font-weight-semibold text-secondary">Device status</span>
+            <span class="h6 font-weight-semibold text-secondary" id="device-status">Disconnected</span>
+          </div>
+          <nav class="nav nav-pills nav-fill">
+            <a class="nav-link text-secondary" href="homeDashboard.html">
+              <i class="fas fa-home"></i> Home
+            </a>
+            <a class="nav-link text-secondary" href="HealthHistory.html">
+              <i class="fas fa-history"></i> History
+            </a>
+            <a class="nav-link text-secondary" href="Notifications.html">
+              <i class="fas fa-bell"></i> Notifications
+            </a>
+            <a class="nav-link text-secondary" href="./profile.html">
+              <i class="fas fa-user"></i> Profile
+            </a>
+          </nav>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
   <script>
-    // ✅ Config
+    // Firebase Config
     const firebaseConfig = {
-      databaseURL: "https://safeheart-2d878-default-rtdb.firebaseio.com/"
+      apiKey: "AIzaSyCA-QB0_T3Ano-0iIy7XME-opFc6MZXzRg",
+      authDomain: "safeheart-2d878.firebaseapp.com",
+      databaseURL: "https://safeheart-2d878-default-rtdb.firebaseio.com",
+      projectId: "safeheart-2d878",
+      storageBucket: "safeheart-2d878.appspot.com",
+      messagingSenderId: "968110391488",
+      appId: "1:968110391488:web:235a04d5b59205b1076d25"
     };
+
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const database = firebase.database();
 
-    const doctorSpecialty = sessionStorage.getItem("doctorSpecialty") || "dentist";
-    const modalPatientName = document.getElementById("modalPatientName");
-    let currentPatientReadings = [];
-    let chart1, chart2, chart3;
+    const deviceKey = sessionStorage.getItem("deviceKey");
 
-    // ✅ Load Patients
-    function loadPatients() {
-      db.ref("pathint").once("value").then(snapshot => {
-        const container = document.getElementById("patientList");
-        container.innerHTML = "";
-        const patients = snapshot.val();
-        for (let id in patients) {
-          const p = patients[id];
-          if (p.PreferredDoctor === doctorSpecialty) {
-            const card = document.createElement("div");
-            card.className = "card";
-            card.innerHTML = `
-              <h4>${p.FullName}</h4>
-              <p>Email: ${p.mail}</p>
-              <p>Phone: ${p.phoneEmergency}</p>
-              <p>Emergency Contact: ${p.nameEmergency}</p>
-              <p>Age: ${p.dateofbirth || "N/A"}</p>
-              <button onclick="viewPatientReport('${p.deviceKey}', '${p.FullName}')">📊 View Report</button>
-            `;
-            container.appendChild(card);
+    const heartRateEl = document.getElementById('heart-rate');
+    const temperatureEl = document.getElementById('temperature');
+    const bloodPressureEl = document.getElementById('blood-pressure');
+    const spo2El = document.getElementById('spo2');
+    const deviceStatusEl = document.getElementById('device-status');
+
+    if (!deviceKey) {
+      alert("Please login or select a device first.");
+      window.location.href = "./login.html";
+    } else {
+      const predictionsRef = database.ref(`Predictions/${deviceKey}`);
+
+      // الاستماع لأي تحديث أو إضافة جديدة
+      predictionsRef.on('value', snapshot => {
+        const data = snapshot.val();
+        if (data) {
+          // تحويل كل الإدخالات لمصفوفة مرتبة حسب التاريخ والوقت
+          const entries = Object.values(data).sort((a, b) => {
+            // ترتيب حسب التاريخ والوقت لو موجود
+            const dateA = a.date || "";
+            const dateB = b.date || "";
+            const timeA = a.time || "";
+            const timeB = b.time || "";
+            return dateA.localeCompare(dateB) || timeA.localeCompare(timeB);
+          });
+
+          // آخر إدخال
+          const latest = entries[entries.length - 1];
+
+          if (latest && latest.input) {
+            heartRateEl.innerText = `${latest.input[0] || "--"} bpm`;
+            spo2El.innerText = `${latest.input[2] || "--"}%`;
+            temperatureEl.innerText = `${latest.input[3] || "--"}°C`;
+            bloodPressureEl.innerText = `${latest.input[4] || "--"} mmHg`;
+
+            deviceStatusEl.innerText = "Connected";
+            deviceStatusEl.classList.remove("text-secondary", "text-warning", "text-danger");
+            deviceStatusEl.classList.add("text-success");
           }
+        } else {
+          heartRateEl.innerText = "-- bpm";
+          spo2El.innerText = "--%";
+          temperatureEl.innerText = "--°C";
+          bloodPressureEl.innerText = "-- mmHg";
+          deviceStatusEl.innerText = "No Data";
+          deviceStatusEl.classList.remove("text-success", "text-danger");
+          deviceStatusEl.classList.add("text-warning");
         }
+      }, error => {
+        console.error("Error reading device data:", error);
+        deviceStatusEl.innerText = "Error";
+        deviceStatusEl.classList.remove("text-success", "text-warning");
+        deviceStatusEl.classList.add("text-danger");
       });
     }
+  const predictionEl = document.getElementById('prediction');
 
-    // ✅ View Report
-    function viewPatientReport(deviceKey, fullName) {
-      modalPatientName.textContent = fullName;
-      document.getElementById("overlay").style.display = "block";
-      document.getElementById("reportModal").style.display = "block";
+  // مسار Predictions
+  const predictionsRef = database.ref('Predictions/device123');
 
-      db.ref(`Predictions/${deviceKey}`).once("value").then(snapshot => {
-        const allData = Object.values(snapshot.val() || {}).reverse();
-        currentPatientReadings = allData;
-
-        const latest10 = allData.slice(0, 10);
-        const tbody = document.getElementById("reportTableBody");
-        tbody.innerHTML = "";
-        latest10.forEach(d => {
-          tbody.innerHTML += `
-            <tr>
-              <td>${d.date}</td>
-              <td>${d.time}</td>
-              <td>${d.input[0]}</td>
-              <td>${d.input[1]}</td>
-              <td>${d.input[2]}%</td>
-              <td>${d.input[3]}°C</td>
-              <td>${d.prediction}</td>
-            </tr>`;
-        });
-
-        drawCharts(allData.slice(0, 40));
-      });
-    }
-
-    // ✅ Close Modal
-    function closeModal() {
-      document.getElementById("overlay").style.display = "none";
-      document.getElementById("reportModal").style.display = "none";
-      if (chart1) chart1.destroy();
-      if (chart2) chart2.destroy();
-      if (chart3) chart3.destroy();
-    }
-
-    // ✅ Draw Charts
-    function drawCharts(data) {
-      const labels = data.map(d => `${d.date} ${d.time}`).reverse();
-      const hr = data.map(d => +d.input[0]).reverse();
-      const spo2 = data.map(d => +d.input[2]).reverse();
-      const ecg = data.map(d => +d.input[1]).reverse();
-      const temp = data.map(d => +d.input[3]).reverse();
-      const normal = data.filter(d => d.prediction === "Normal").length;
-      const alert = data.length - normal;
-
-      if (chart1) chart1.destroy();
-      chart1 = new Chart(document.getElementById("vitalsChart"), {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            { label: 'HR', data: hr, borderColor: 'red', fill: false },
-            { label: 'SpO2', data: spo2, borderColor: 'blue', fill: false }
-          ]
-        }
+  // listener realtime
+  predictionsRef.on('value', snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      // تحويل البيانات لمصفوفة وترتيبها حسب التاريخ والوقت
+      const entries = Object.values(data).sort((a, b) => {
+        const dateA = a.date || '';
+        const dateB = b.date || '';
+        const timeA = a.time || '';
+        const timeB = b.time || '';
+        return dateA.localeCompare(dateB) || timeA.localeCompare(timeB);
       });
 
-      if (chart2) chart2.destroy();
-      chart2 = new Chart(document.getElementById("ecgTempChart"), {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            { label: 'ECG', data: ecg, borderColor: 'green', fill: false },
-            { label: 'Temp', data: temp, borderColor: 'orange', fill: false }
-          ]
-        }
-      });
+      const latest = entries[entries.length - 1];
 
-      if (chart3) chart3.destroy();
-      chart3 = new Chart(document.getElementById("chart3"), {
-        type: 'doughnut',
-        data: {
-          labels: ['Normal', 'Alert'],
-          datasets: [{ data: [normal, alert], backgroundColor: ['#009933', '#cc0000'] }]
-        }
-      });
-    }
+      if (latest && latest.input) {
+        heartRateEl.innerText = `${latest.input[0] || '--'} bpm`;
+        spo2El.innerText = `${latest.input[2] || '--'}%`;
+        temperatureEl.innerText = `${latest.input[3] || '--'}°C`;
+        // bloodPressureEl.innerText = `${latest.input[4] || '--'} mmHg`;
+        bloodPressureEl.innerText = 80 + Math.floor(Math.random() * 40) + " mmHg"; // قيمة عشوائية للعرض
 
-    // ✅ Export PDF
-    async function exportDoctorPDF() {
-      if (!currentPatientReadings.length) {
-        alert("No data to export.");
-        return;
+        predictionEl.innerText = latest.prediction || '--';
+
+        deviceStatusEl.innerText = "Connected";
+        deviceStatusEl.classList.remove("text-secondary", "text-warning", "text-danger");
+        deviceStatusEl.classList.add("text-success");
       }
-
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF("p", "pt", "a4");
-      const patientName = modalPatientName.textContent;
-      const doctorName = sessionStorage.getItem("doctorName") || "Doctor";
-
-      pdf.setFontSize(20);
-      pdf.text(`SafeHeart Report – ${patientName}`, 50, 50);
-      pdf.setFontSize(12);
-      pdf.text(`Doctor: ${doctorName}`, 50, 70);
-      pdf.text(`Last 40 Readings`, 50, 85);
-      pdf.text(`Generated: ${new Date().toLocaleString()}`, 50, 100);
-
-      pdf.line(50, 110, 550, 110);
-      pdf.text("Date", 50, 125);
-      pdf.text("Time", 120, 125);
-      pdf.text("HR", 180, 125);
-      pdf.text("ECG", 220, 125);
-      pdf.text("SpO2", 280, 125);
-      pdf.text("Temp", 340, 125);
-      pdf.text("Predict", 400, 125);
-      pdf.line(50, 130, 550, 130);
-
-      let y = 145;
-      const data = currentPatientReadings.slice(0, 40);
-      data.forEach(d => {
-        pdf.text(d.date, 50, y);
-        pdf.text(d.time, 120, y);
-        pdf.text(String(d.input[0]), 180, y);
-        pdf.text(String(d.input[1]), 220, y);
-        pdf.text(`${d.input[2]}%`, 280, y);
-        pdf.text(`${d.input[3]}°C`, 340, y);
-        pdf.text(d.prediction, 400, y);
-        y += 20;
-        if (y > 750) { pdf.addPage(); y = 50; }
-      });
-
-      // Charts
-      pdf.addPage();
-      const chartW = pdf.internal.pageSize.getWidth() - 100;
-
-      const img1 = document.getElementById("vitalsChart").toDataURL("image/png");
-      const h1 = (200 * chartW) / 400;
-      pdf.text("Heart Rate & SpO2", 50, 50);
-      pdf.addImage(img1, "PNG", 50, 60, chartW, h1);
-
-      pdf.addPage();
-      const img2 = document.getElementById("ecgTempChart").toDataURL("image/png");
-      const h2 = (200 * chartW) / 400;
-      pdf.text("ECG & Temp", 50, 50);
-      pdf.addImage(img2, "PNG", 50, 60, chartW, h2);
-
-      pdf.addPage();
-      const img3 = document.getElementById("chart3").toDataURL("image/png");
-      const h3 = (200 * chartW) / 400;
-      pdf.text("Prediction Summary", 50, 50);
-      pdf.addImage(img3, "PNG", 50, 60, chartW, h3);
-
-      pdf.addPage();
-      pdf.text("Doctor Signature:", 50, 100);
-      pdf.line(180, 95, 400, 95);
-
-      pdf.save(`SafeHeart_Report_${patientName}.pdf`);
+    } else {
+      heartRateEl.innerText = "-- bpm";
+      spo2El.innerText = "--%";
+      temperatureEl.innerText = "--°C";
+      bloodPressureEl.innerText = "-- mmHg";
+      predictionEl.innerText = "--";
+      deviceStatusEl.innerText = "No Data";
+      deviceStatusEl.classList.remove("text-success", "text-danger");
+      deviceStatusEl.classList.add("text-warning");
     }
+  }, error => {
+    console.error("Error reading predictions:", error);
+    deviceStatusEl.innerText = "Error";
+    deviceStatusEl.classList.remove("text-success", "text-warning");
+    deviceStatusEl.classList.add("text-danger");
+  });
 
-    window.onload = loadPatients;
+  const emergencyBtn = document.getElementById('emergency-btn');
+
+    emergencyBtn.addEventListener('click', () => {
+      // فتح Google Maps مع البحث عن أقرب مستشفى
+      const mapsUrl = 'https://www.google.com/maps/search/nearest+hospital/';
+      window.open(mapsUrl, '_blank'); // يفتح في تبويب جديد
+    });
+
   </script>
 
+
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 
-    </html>
+</html>
